@@ -263,6 +263,29 @@ export default function WorkoutSession({ workout, onClose, onComplete }: Workout
           ))}
         </div>
 
+        {/* Add Single Rep Button */}
+        <div className="mb-8 w-full max-w-sm">
+          <button
+            onClick={() => handleBankReps(1)}
+            disabled={bankedReps >= targetReps}
+            className="w-full bg-gradient-to-r from-emerald-500 to-blue-500 text-white py-6 px-6 rounded-xl font-bold text-2xl hover:from-emerald-600 hover:to-blue-600 active:from-emerald-700 active:to-blue-700 active:scale-95 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg touch-manipulation select-none flex items-center justify-center gap-3"
+            style={{ 
+              WebkitTapHighlightColor: 'transparent',
+              WebkitUserSelect: 'none',
+              userSelect: 'none'
+            }}
+            onTouchStart={(e) => {
+              e.currentTarget.style.transform = 'scale(0.95)';
+            }}
+            onTouchEnd={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            <span className="text-3xl">+</span>
+            <span>Add Rep</span>
+          </button>
+        </div>
+
         {/* Custom Rep Input */}
         <div className="mb-8 w-full max-w-sm">
           <div className="flex gap-2">
