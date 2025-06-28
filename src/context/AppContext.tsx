@@ -84,35 +84,35 @@ const loadInitialState = (): AppState => {
   
   // Default state for new users
   return {
-  user: null,
-  foodEntries: [],
-  plannedFoodEntries: [],
-  mealTemplates: [],
-  workouts: [],
-  recipes: [],
-  wellnessEntries: [],
-  currentDate: new Date().toISOString().split('T')[0],
-  customFoods: [],
-  quickAddEntries: [],
-  notifications: [
-    {
-      id: '1',
-      type: 'reminder',
-      title: 'Welcome to your fitness journey!',
-      message: 'Complete your first workout to get started',
-      timestamp: new Date().toISOString(),
-      read: false
-    },
-    {
-      id: '2',
-      type: 'meal',
-      title: 'Meal reminder',
-      message: "Don't forget to log your lunch",
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      read: false
-    }
-  ]
-};
+    user: null,
+    foodEntries: [],
+    plannedFoodEntries: [],
+    mealTemplates: [],
+    workouts: [],
+    recipes: [],
+    wellnessEntries: [],
+    currentDate: new Date().toISOString().split('T')[0],
+    customFoods: [],
+    quickAddEntries: [],
+    notifications: [
+      {
+        id: '1',
+        type: 'reminder',
+        title: 'Welcome to your fitness journey!',
+        message: 'Complete your first workout to get started',
+        timestamp: new Date().toISOString(),
+        read: false
+      },
+      {
+        id: '2',
+        type: 'meal',
+        title: 'Meal reminder',
+        message: "Don't forget to log your lunch",
+        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        read: false
+      }
+    ]
+  };
 };
 
 const initialState: AppState = loadInitialState();
@@ -285,22 +285,6 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const updatedTemplates = state.mealTemplates.map(t => 
         t.id === templateId ? { ...t, lastUsed: new Date().toISOString() } : t
       );
-    case 'ADD_RECIPE':
-      return { ...state, recipes: [...state.recipes, action.payload] };
-    case 'UPDATE_RECIPE':
-      return {
-        ...state,
-        recipes: state.recipes.map(recipe => 
-          recipe.id === action.payload.id ? action.payload : recipe
-        )
-      };
-    case 'DELETE_RECIPE':
-      return {
-        ...state,
-        recipes: state.recipes.filter(recipe => recipe.id !== action.payload)
-      };
-    case 'ADD_QUICK_ADD_ENTRY':
-      return { ...state, quickAddEntries: [...state.quickAddEntries, action.payload] };
       
       newState = {
         ...state,
@@ -328,26 +312,40 @@ function appReducer(state: AppState, action: AppAction): AppState {
         customFoods: state.customFoods.filter(food => food.id !== action.payload)
       };
       break;
-      newState = { ...state, recipes: [...state.recipes, action.payload] };
-      break;
       
     case 'UPDATE_FOOD_USAGE':
-      newState = {
       newState = {
         ...state,
         customFoods: state.customFoods.map(food => 
           food.id === action.payload ? {
             ...food,
-      break;
-      
-            lastUsed: new Date().toISOString(),
-      newState = {
+            lastUsed: new Date().toISOString()
           } : food
         )
       };
       break;
       
+    case 'ADD_RECIPE':
+      newState = { ...state, recipes: [...state.recipes, action.payload] };
       break;
+      
+    case 'UPDATE_RECIPE':
+      newState = {
+        ...state,
+        recipes: state.recipes.map(recipe => 
+          recipe.id === action.payload.id ? action.payload : recipe
+        )
+      };
+      break;
+      
+    case 'DELETE_RECIPE':
+      newState = {
+        ...state,
+        recipes: state.recipes.filter(recipe => recipe.id !== action.payload)
+      };
+      break;
+      
+    case 'ADD_QUICK_ADD_ENTRY':
       newState = { ...state, quickAddEntries: [...state.quickAddEntries, action.payload] };
       break;
       
