@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { X, Search, Save, Calculator, Library, Plus, Camera, Zap, Clock, Star } from 'lucide-react';
 import { FoodEntry, PlannedFoodEntry, Food } from '../../types';
-import { mockFoods } from '../../data/mockData';
+import { allMockFoods } from '../../data/mockData';
 import QuickAddModal from './QuickAddModal';
 import RecipeBuilderModal from './RecipeBuilderModal';
 
@@ -34,7 +34,7 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
   });
 
   // Combine built-in foods with custom foods
-  const allFoods = [...mockFoods, ...customFoods];
+  const allFoods = [...allMockFoods, ...customFoods];
   
   // Convert recipes to food-like objects for selection
   const recipeAsFoods = recipes.map(recipe => ({

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { X, Search, Plus, Edit3, Trash2, Library, ChefHat, Camera } from 'lucide-react';
 import { Food } from '../../types';
-import { mockFoods } from '../../data/mockData';
+import { allMockFoods } from '../../data/mockData';
 import RecipeBuilderModal from './RecipeBuilderModal';
 
 interface FoodLibraryProps {
@@ -28,7 +28,7 @@ export default function FoodLibrary({ onClose }: FoodLibraryProps) {
   });
 
   // Combine all foods
-  const allFoods = [...mockFoods, ...customFoods];
+  const allFoods = [...allMockFoods, ...customFoods];
 
   // Convert recipes to food-like objects for display
   const recipeAsFoods = recipes.map(recipe => ({

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { X, Plus, Trash2, Save, Search, Calculator, ChefHat } from 'lucide-react';
 import { Recipe, Food } from '../../types';
-import { mockFoods } from '../../data/mockData';
+import { allMockFoods } from '../../data/mockData';
 
 interface RecipeBuilderModalProps {
   recipe?: Recipe | null;
@@ -25,7 +25,7 @@ export default function RecipeBuilderModal({ recipe, onClose }: RecipeBuilderMod
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Combine all available foods
-  const allFoods = [...mockFoods, ...customFoods];
+  const allFoods = [...allMockFoods, ...customFoods];
   const filteredFoods = allFoods.filter(food =>
     food.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     food.category.toLowerCase().includes(searchTerm.toLowerCase())
