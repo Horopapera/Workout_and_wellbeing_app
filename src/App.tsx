@@ -3,21 +3,42 @@ import { AppProvider, useApp } from './context/AppContext';
 import OnboardingFlow from './components/Onboarding/OnboardingFlow';
 import Dashboard from './components/Dashboard/Dashboard';
 import WorkoutPlans from './components/Workout/WorkoutPlans';
+import WorkoutSession from './components/Workout/WorkoutSession';
 import Navigation from './components/Layout/Navigation';
+import { Workout } from './types';
 
 function AppContent() {
   const { state } = useApp();
+  const { dispatch } = useApp();
   const [currentTab, setCurrentTab] = useState('dashboard');
+  const [showWorkoutSession, setShowWorkoutSession] = useState(false);
+  const [activeWorkout, setActiveWorkout] = useState<Workout | null>(null);
 
   // Show onboarding if user hasn't completed it
   if (!state.user || !state.user.onboardingCompleted) {
     return <OnboardingFlow />;
   }
 
+  const handleStartWorkoutFromDashboard = (workout: Workout) => {
+    setActiveWorkout(workout);
+    setShowWorkoutSession(true);
+  };
+
+  const handleCompleteWorkoutSession = (completedWorkout: Workout) => {
+    dispatch({ type: 'ADD_WORKOUT', payload: completedWorkout });
+    setShowWorkoutSession(false);
+    setActiveWorkout(null);
+  };
+
+  const handleCloseWorkoutSession = () => {
+    setShowWorkoutSession(false);
+    setActiveWorkout(null);
+  };
+
   const renderCurrentPage = () => {
     switch (currentTab) {
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard onStartWorkout={handleStartWorkoutFromDashboard} />;
       case 'workout':
         return (
           <WorkoutPlans />
@@ -75,6 +96,16 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-gray-50">
       {renderCurrentPage()}
+      
+      {/* Workout Session Modal */}
+      {showWorkoutSession && activeWorkout && (
+        <WorkoutSession
+          workout={activeWorkout}
+          onClose={handleCloseWorkoutSession}
+          onComplete={handleCompleteWorkoutSession}
+        />
+      )}
+      
       <Navigation currentTab={currentTab} onTabChange={setCurrentTab} />
     </div>
   );

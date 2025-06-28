@@ -4,9 +4,15 @@ import DashboardHeader from './DashboardHeader';
 import QuickStats from './QuickStats';
 import TodayOverview from './TodayOverview';
 import QuickActions from './QuickActions';
+import WorkoutQuickStart from './WorkoutQuickStart';
 
-export default function Dashboard() {
+interface DashboardProps {
+  onStartWorkout?: (workout: any) => void;
+}
+
+export default function Dashboard({ onStartWorkout }: DashboardProps) {
   const { state } = useApp();
+  const [showWorkoutQuickStart, setShowWorkoutQuickStart] = useState(false);
   const { user, foodEntries, workouts, wellnessEntries, currentDate } = state;
 
   if (!user) return null;
@@ -49,8 +55,19 @@ export default function Dashboard() {
           completedWorkouts={completedWorkouts.length}
         />
         
-        <QuickActions />
+        <QuickActions onStartWorkout={() => setShowWorkoutQuickStart(true)} />
       </div>
+      
+      {/* Workout Quick Start Modal */}
+      {showWorkoutQuickStart && (
+        <WorkoutQuickStart
+          onClose={() => setShowWorkoutQuickStart(false)}
+          onStartWorkout={(workout) => {
+            setShowWorkoutQuickStart(false);
+            onStartWorkout?.(workout);
+          }}
+        />
+      )}
     </div>
   );
 }
