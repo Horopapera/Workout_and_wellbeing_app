@@ -198,13 +198,26 @@ export default function WorkoutSession({ workout, onClose, onComplete }: Workout
         </div>
 
         {/* Quick Rep Buttons */}
-        <div className="grid grid-cols-4 gap-3 mb-8 w-full max-w-sm">
+        <div className="grid grid-cols-4 gap-4 mb-8 w-full max-w-sm">
           {quickRepOptions.map(reps => (
             <button
               key={reps}
               onClick={() => handleBankReps(reps)}
               disabled={bankedReps >= targetReps}
-              className="bg-white border-2 border-emerald-500 text-emerald-600 py-4 px-4 rounded-xl font-bold text-lg hover:bg-emerald-50 active:bg-emerald-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+              className="bg-white border-2 border-emerald-500 text-emerald-600 py-6 px-4 rounded-xl font-bold text-xl hover:bg-emerald-50 active:bg-emerald-100 active:scale-95 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg touch-manipulation select-none"
+              style={{ 
+                WebkitTapHighlightColor: 'transparent',
+                WebkitUserSelect: 'none',
+                userSelect: 'none'
+              }}
+              onTouchStart={(e) => {
+                e.currentTarget.style.transform = 'scale(0.95)';
+                e.currentTarget.style.backgroundColor = '#d1fae5';
+              }}
+              onTouchEnd={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.backgroundColor = '#f0fdf4';
+              }}
             >
               +{reps}
             </button>
@@ -212,14 +225,14 @@ export default function WorkoutSession({ workout, onClose, onComplete }: Workout
         </div>
 
         {/* Custom Rep Input */}
-        <div className="mb-6 w-full max-w-sm">
+        <div className="mb-8 w-full max-w-sm">
           <div className="flex gap-2">
             <input
               type="number"
               min="1"
               max={targetReps - bankedReps}
               placeholder="Custom"
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-center font-medium"
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-center font-medium text-lg"
               onKeyPress={(e) => {
                 if (e.key === 'Enter') {
                   const value = parseInt((e.target as HTMLInputElement).value);
@@ -239,7 +252,7 @@ export default function WorkoutSession({ workout, onClose, onComplete }: Workout
                   input.value = '';
                 }
               }}
-              className="bg-emerald-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-emerald-600 transition-colors"
+              className="bg-emerald-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-emerald-600 active:bg-emerald-700 transition-colors text-lg"
             >
               Add
             </button>
@@ -249,7 +262,7 @@ export default function WorkoutSession({ workout, onClose, onComplete }: Workout
         {/* Reset Button */}
         <button
           onClick={() => setBankedReps(0)}
-          className="mb-6 flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
+          className="mb-8 flex items-center gap-2 text-gray-600 hover:text-gray-800 active:text-gray-900 transition-colors py-2 px-4 rounded-lg hover:bg-gray-100"
         >
           <RotateCcw className="w-4 h-4" />
           Reset
@@ -257,21 +270,21 @@ export default function WorkoutSession({ workout, onClose, onComplete }: Workout
       </div>
 
       {/* Bottom Actions */}
-      <div className="bg-white border-t border-gray-200 p-4 pb-8">
+      <div className="bg-white border-t border-gray-200 p-4 pb-8 safe-area-inset-bottom">
         <div className="flex gap-3">
           <button
             onClick={handleSkipSet}
-            className="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+            className="flex-1 bg-gray-100 text-gray-700 py-4 px-4 rounded-lg font-medium hover:bg-gray-200 active:bg-gray-300 transition-colors text-lg"
           >
             Skip Set
           </button>
           <button
             onClick={handleCompleteSet}
             disabled={bankedReps === 0}
-            className={`flex-1 py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
+            className={`flex-1 py-4 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors text-lg ${
               bankedReps === 0
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white hover:from-emerald-600 hover:to-blue-600'
+                : 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white hover:from-emerald-600 hover:to-blue-600 active:from-emerald-700 active:to-blue-700'
             }`}
           >
             <Check className="w-4 h-4" />

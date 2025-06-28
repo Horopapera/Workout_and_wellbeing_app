@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { ChevronLeft, ChevronRight, Calendar, CheckCircle2, Clock, Plus, CalendarPlus } from 'lucide-react';
+import DayWorkoutView from './DayWorkoutView';
 
 export default function WorkoutCalendar() {
   const { state } = useApp();
   const { workouts } = state;
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
   // Get the first day of the month and number of days
   const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
@@ -109,6 +111,7 @@ export default function WorkoutCalendar() {
             return (
               <div
                 key={day}
+                onClick={() => setSelectedDay(formatDate(day))}
                 className={`h-12 border border-gray-100 rounded-lg flex flex-col items-center justify-center text-sm relative ${
                   isToday(day) ? 'bg-emerald-100 border-emerald-300' : 'bg-white hover:bg-gray-50'
                 } transition-colors cursor-pointer`}
@@ -149,6 +152,14 @@ export default function WorkoutCalendar() {
           </div>
         </div>
       </div>
+
+      {/* Day Workout View Modal */}
+      {selectedDay && (
+        <DayWorkoutView
+          date={selectedDay}
+          onClose={() => setSelectedDay(null)}
+        />
+      )}
 
       {/* Today's Workouts */}
       <div className="bg-white rounded-xl shadow-sm p-4">
