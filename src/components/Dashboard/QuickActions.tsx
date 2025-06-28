@@ -20,8 +20,8 @@ export default function QuickActions({ onStartWorkout }: QuickActionsProps) {
       color: 'from-orange-500 to-red-500',
       bgColor: 'bg-orange-50',
       onClick: () => {
-        // TODO: Implement meal logging
-        console.log('Log meal clicked');
+        // TODO: Navigate to diet section or open meal logging modal
+        console.log('Log meal clicked - will implement in next phase');
       }
     },
     {

@@ -13,6 +13,8 @@ interface AppState {
 type AppAction =
   | { type: 'SET_USER'; payload: User }
   | { type: 'ADD_FOOD_ENTRY'; payload: FoodEntry }
+  | { type: 'UPDATE_FOOD_ENTRY'; payload: FoodEntry }
+  | { type: 'DELETE_FOOD_ENTRY'; payload: string }
   | { type: 'ADD_WORKOUT'; payload: Workout }
   | { type: 'UPDATE_WORKOUT'; payload: Workout }
   | { type: 'DELETE_WORKOUT'; payload: string }
@@ -35,6 +37,18 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, user: action.payload };
     case 'ADD_FOOD_ENTRY':
       return { ...state, foodEntries: [...state.foodEntries, action.payload] };
+    case 'UPDATE_FOOD_ENTRY':
+      return {
+        ...state,
+        foodEntries: state.foodEntries.map(entry => 
+          entry.id === action.payload.id ? action.payload : entry
+        )
+      };
+    case 'DELETE_FOOD_ENTRY':
+      return {
+        ...state,
+        foodEntries: state.foodEntries.filter(entry => entry.id !== action.payload)
+      };
     case 'ADD_WORKOUT':
       // Check if workout with same ID already exists (prevent duplicates)
       const existingWorkout = state.workouts.find(w => w.id === action.payload.id);

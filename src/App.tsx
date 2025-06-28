@@ -4,6 +4,7 @@ import OnboardingFlow from './components/Onboarding/OnboardingFlow';
 import Dashboard from './components/Dashboard/Dashboard';
 import WorkoutPlans from './components/Workout/WorkoutPlans';
 import WorkoutSession from './components/Workout/WorkoutSession';
+import DietTracker from './components/Diet/DietTracker';
 import Navigation from './components/Layout/Navigation';
 import { Workout } from './types';
 
@@ -45,18 +46,7 @@ function AppContent() {
         );
       case 'diet':
         return (
-          <div className="max-w-md mx-auto bg-gray-50 min-h-screen pb-20">
-            <div className="bg-gradient-to-r from-orange-500 to-red-500 px-4 py-8 text-white">
-              <h1 className="text-2xl font-bold">Diet Planning</h1>
-              <p className="text-white/80">Plan your meals and nutrition</p>
-            </div>
-            <div className="p-4">
-              <div className="bg-white rounded-xl p-6 text-center">
-                <p className="text-gray-600">Diet planning features coming soon!</p>
-                <p className="text-sm text-gray-500 mt-2">Meal planning, food library, and more.</p>
-              </div>
-            </div>
-          </div>
+          <DietTracker />
         );
       case 'analytics':
         return (

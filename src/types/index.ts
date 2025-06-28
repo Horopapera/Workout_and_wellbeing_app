@@ -44,6 +44,7 @@ export interface FoodEntry {
   fat: number;
   mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
   date: string;
+  createdAt?: string;
 }
 
 export interface Exercise {
