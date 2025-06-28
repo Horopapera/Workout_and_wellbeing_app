@@ -86,8 +86,6 @@ export const mockExercises: Exercise[] = [
     equipment: 'Barbell'
   },
   {
-  },
-  {
     id: '11',
     name: 'Bent-over Row',
     category: 'Strength',
