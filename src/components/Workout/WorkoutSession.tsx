@@ -15,6 +15,7 @@ export default function WorkoutSession({ workout, onClose, onComplete }: Workout
   const [bankedReps, setBankedReps] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [sessionTime, setSessionTime] = useState(0);
+  const [startTime] = useState(new Date().toISOString());
   const [exercises, setExercises] = useState<WorkoutExercise[]>(workout.exercises);
 
   const currentExercise = exercises[currentExerciseIndex];
@@ -91,13 +92,51 @@ export default function WorkoutSession({ workout, onClose, onComplete }: Workout
   };
 
   const completeWorkout = (finalExercises: WorkoutExercise[]) => {
+    const endTime = new Date().toISOString();
+    const durationMinutes = Math.floor(sessionTime / 60);
+    
+    // Calculate calories burned (rough estimate based on duration and exercise type)
+    const caloriesBurned = calculateCaloriesBurned(finalExercises, durationMinutes);
+    
     const completedWorkout: Workout = {
       ...workout,
       exercises: finalExercises,
       completed: true,
-      duration: Math.floor(sessionTime / 60)
+      duration: durationMinutes,
+      startTime,
+      endTime,
+      caloriesBurned
     };
     onComplete(completedWorkout);
+  };
+
+  const calculateCaloriesBurned = (exercises: WorkoutExercise[], duration: number) => {
+    // Basic calorie calculation based on exercise types and duration
+    // This is a simplified calculation - in a real app you'd use more sophisticated formulas
+    
+    let baseCaloriesPerMinute = 5; // Base metabolic rate during exercise
+    
+    // Adjust based on exercise types
+    const hasCardio = exercises.some(ex => 
+      ex.exercise.category === 'Cardio' || 
+      ex.exercise.name.toLowerCase().includes('running') ||
+      ex.exercise.name.toLowerCase().includes('cycling') ||
+      ex.exercise.name.toLowerCase().includes('burpees')
+    );
+    
+    const hasStrength = exercises.some(ex => 
+      ex.exercise.category === 'Strength' ||
+      ex.exercise.category === 'Bodyweight'
+    );
+    
+    if (hasCardio) baseCaloriesPerMinute += 3;
+    if (hasStrength) baseCaloriesPerMinute += 2;
+    
+    // Factor in total sets and reps
+    const totalSets = exercises.reduce((acc, ex) => acc + ex.sets.length, 0);
+    const intensityMultiplier = Math.min(1.5, 1 + (totalSets * 0.02));
+    
+    return Math.round(baseCaloriesPerMinute * duration * intensityMultiplier);
   };
 
   const progressPercentage = bankedReps > 0 ? (bankedReps / targetReps) * 100 : 0;

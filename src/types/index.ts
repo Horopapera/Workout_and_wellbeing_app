@@ -78,6 +78,9 @@ export interface Workout {
   exercises: WorkoutExercise[];
   date: string;
   duration?: number; // in minutes
+  startTime?: string; // ISO string
+  endTime?: string; // ISO string
+  caloriesBurned?: number;
   completed: boolean;
   notes?: string;
 }
