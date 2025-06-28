@@ -97,8 +97,6 @@ export default function WorkoutScheduler({ workout, onClose }: WorkoutSchedulerP
       scheduledWorkouts.push(scheduledWorkout);
     });
 
-    }
-
     return scheduledWorkouts;
   };
 
