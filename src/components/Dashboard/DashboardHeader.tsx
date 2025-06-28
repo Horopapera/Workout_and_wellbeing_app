@@ -34,7 +34,6 @@ export default function DashboardHeader({ user, onNotificationClick, onProfileCl
             <p className="text-white/80 text-sm">{today}</p>
           </div>
         </div>
-        </div>
         
         <div className="flex items-center gap-2">
           <button 
