@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import { User, FoodEntry, PlannedFoodEntry, MealTemplate, Workout, Recipe, WellnessEntry, Food, QuickAddEntry, Notification } from '../types';
-import { saveUserProfile, loadUserProfile, saveAppData, loadAppData, clearAllUserData } from '../utils/localStorage';
-import { clearCurrentSession } from '../utils/authStorage';
+import { dataService } from '../services/dataService';
 
 interface AppState {
   user: User | null;
@@ -51,39 +50,10 @@ type AppAction =
   | { type: 'LOGOUT_USER' }
   | { type: 'LOAD_USER_DATA'; payload: { user: User; appData: any } };
 
-// Load user profile from localStorage on app start
+// Load user profile from data service on app start
 const loadInitialState = (): AppState => {
-  const savedUser = loadUserProfile();
-  
-  if (savedUser) {
-    // Load user-specific app data
-    const appData = loadAppData(savedUser.id);
-    
-    return {
-      user: savedUser,
-      foodEntries: appData?.foodEntries || [],
-      plannedFoodEntries: appData?.plannedFoodEntries || [],
-      mealTemplates: appData?.mealTemplates || [],
-      workouts: appData?.workouts || [],
-      recipes: appData?.recipes || [],
-      wellnessEntries: appData?.wellnessEntries || [],
-      currentDate: new Date().toISOString().split('T')[0],
-      customFoods: appData?.customFoods || [],
-      quickAddEntries: appData?.quickAddEntries || [],
-      notifications: appData?.notifications || [
-        {
-          id: '1',
-          type: 'reminder',
-          title: 'Welcome back!',
-          message: 'Continue your fitness journey today',
-          timestamp: new Date().toISOString(),
-          read: false
-        }
-      ]
-    };
-  }
-  
   // Default state for new users
+  // User data will be loaded asynchronously after authentication
   return {
     user: null,
     foodEntries: [],
@@ -118,21 +88,104 @@ const loadInitialState = (): AppState => {
 
 const initialState: AppState = loadInitialState();
 
-// Save app data to localStorage whenever state changes
-const saveAppDataToStorage = (state: AppState) => {
-  if (state.user) {
-    const appData = {
-      foodEntries: state.foodEntries,
-      plannedFoodEntries: state.plannedFoodEntries,
-      mealTemplates: state.mealTemplates,
-      workouts: state.workouts,
-      recipes: state.recipes,
-      wellnessEntries: state.wellnessEntries,
-      customFoods: state.customFoods,
-      quickAddEntries: state.quickAddEntries,
-      notifications: state.notifications
-    };
-    saveAppData(state.user.id, appData);
+// Save data through data service whenever state changes
+const saveDataToService = async (state: AppState, action: AppAction) => {
+  if (!state.user) return;
+
+  try {
+    const userId = state.user.id;
+
+    // Save data based on the action type
+    switch (action.type) {
+      case 'SET_USER':
+        await dataService.saveUser(action.payload);
+        break;
+      case 'ADD_FOOD_ENTRY':
+        await dataService.saveFoodEntry(userId, action.payload);
+        break;
+      case 'UPDATE_FOOD_ENTRY':
+        await dataService.updateFoodEntry(userId, action.payload);
+        break;
+      case 'DELETE_FOOD_ENTRY':
+        await dataService.deleteFoodEntry(userId, action.payload);
+        break;
+      case 'ADD_PLANNED_FOOD_ENTRY':
+        await dataService.savePlannedFoodEntry(userId, action.payload);
+        break;
+      case 'UPDATE_PLANNED_FOOD_ENTRY':
+        await dataService.updatePlannedFoodEntry(userId, action.payload);
+        break;
+      case 'DELETE_PLANNED_FOOD_ENTRY':
+        await dataService.deletePlannedFoodEntry(userId, action.payload);
+        break;
+      case 'ADD_MEAL_TEMPLATE':
+        await dataService.saveMealTemplate(userId, action.payload);
+        break;
+      case 'UPDATE_MEAL_TEMPLATE':
+        await dataService.updateMealTemplate(userId, action.payload);
+        break;
+      case 'DELETE_MEAL_TEMPLATE':
+        await dataService.deleteMealTemplate(userId, action.payload);
+        break;
+      case 'ADD_CUSTOM_FOOD':
+        await dataService.saveCustomFood(userId, action.payload);
+        break;
+      case 'UPDATE_CUSTOM_FOOD':
+        await dataService.updateCustomFood(userId, action.payload);
+        break;
+      case 'DELETE_CUSTOM_FOOD':
+        await dataService.deleteCustomFood(userId, action.payload);
+        break;
+      case 'ADD_RECIPE':
+        await dataService.saveRecipe(userId, action.payload);
+        break;
+      case 'UPDATE_RECIPE':
+        await dataService.updateRecipe(userId, action.payload);
+        break;
+      case 'DELETE_RECIPE':
+        await dataService.deleteRecipe(userId, action.payload);
+        break;
+      case 'ADD_QUICK_ADD_ENTRY':
+        await dataService.saveQuickAddEntry(userId, action.payload);
+        break;
+      case 'ADD_WORKOUT':
+        await dataService.saveWorkout(userId, action.payload);
+        break;
+      case 'UPDATE_WORKOUT':
+        await dataService.updateWorkout(userId, action.payload);
+        break;
+      case 'DELETE_WORKOUT':
+        await dataService.deleteWorkout(userId, action.payload);
+        break;
+      case 'ADD_WELLNESS_ENTRY':
+        await dataService.saveWellnessEntry(userId, action.payload);
+        break;
+      case 'ADD_NOTIFICATION':
+        await dataService.saveNotification(userId, action.payload);
+        break;
+      case 'MARK_NOTIFICATION_READ':
+      case 'DELETE_NOTIFICATION':
+        // Find and update/delete the notification
+        const notification = state.notifications.find(n => n.id === action.payload);
+        if (notification) {
+          if (action.type === 'MARK_NOTIFICATION_READ') {
+            await dataService.updateNotification(userId, { ...notification, read: true });
+          } else {
+            await dataService.deleteNotification(userId, action.payload);
+          }
+        }
+        break;
+      case 'CLEAR_ALL_NOTIFICATIONS':
+        // Update all notifications to read
+        for (const notification of state.notifications.filter(n => !n.read)) {
+          await dataService.updateNotification(userId, { ...notification, read: true });
+        }
+        break;
+    }
+  } catch (error) {
+    console.error('Failed to save data to service:',  error);
+    // In a production app, we would handle this error more gracefully
+    // For now, we'll just log it and continue
   }
 };
 
@@ -142,8 +195,6 @@ function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case 'SET_USER':
       newState = { ...state, user: action.payload };
-      // Save user profile to localStorage
-      saveUserProfile(action.payload);
       break;
       
     case 'LOAD_USER_DATA':
@@ -155,10 +206,6 @@ function appReducer(state: AppState, action: AppAction): AppState {
       break;
       
     case 'LOGOUT_USER':
-      // Clear all data from localStorage
-      clearAllUserData();
-      // Clear authentication session
-      clearCurrentSession();
       // Reset to initial empty state
       newState = {
         user: null,
@@ -417,11 +464,6 @@ function appReducer(state: AppState, action: AppAction): AppState {
       newState = state;
   }
   
-  // Save app data to localStorage after state changes (except for logout)
-  if (action.type !== 'LOGOUT_USER') {
-    saveAppDataToStorage(newState);
-  }
-  
   return newState;
 }
 
@@ -433,8 +475,23 @@ const AppContext = createContext<{
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
+  // Save data to service after state changes
+  const wrappedDispatch = (action: AppAction) => {
+    // First update the state
+    dispatch(action);
+    
+    // Then save the data to the service (except for logout)
+    if (action.type !== 'LOGOUT_USER') {
+      // We need to access the updated state, so we use setTimeout
+      // In a real app, we would use a proper state management solution
+      setTimeout(() => {
+        saveDataToService(state, action);
+      }, 0);
+    }
+  };
+
   return (
-    <AppContext.Provider value={{ state, dispatch }}>
+    <AppContext.Provider value={{ state, dispatch: wrappedDispatch }}>
       {children}
     </AppContext.Provider>
   );

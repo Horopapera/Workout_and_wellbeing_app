@@ -1,3 +1,5 @@
+import { dataService } from '../services/dataService';
+
 // Authentication storage utilities for simulated multi-user system
 export const AUTH_STORAGE_KEYS = {
   USER_ACCOUNTS: 'fitness_app_user_accounts',
@@ -21,6 +23,7 @@ export interface UserSession {
 
 // User accounts management
 export const saveUserAccount = (account: UserAccount): void => {
+  // This will be replaced by Supabase Auth in Phase 5
   try {
     const accounts = loadAllUserAccounts();
     const existingIndex = accounts.findIndex(acc => acc.id === account.id);
@@ -38,6 +41,7 @@ export const saveUserAccount = (account: UserAccount): void => {
 };
 
 export const loadAllUserAccounts = (): UserAccount[] => {
+  // This will be replaced by Supabase Auth in Phase 5
   try {
     const stored = localStorage.getItem(AUTH_STORAGE_KEYS.USER_ACCOUNTS);
     return stored ? JSON.parse(stored) : [];
@@ -48,16 +52,19 @@ export const loadAllUserAccounts = (): UserAccount[] => {
 };
 
 export const findUserByEmail = (email: string): UserAccount | null => {
+  // This will be replaced by Supabase Auth in Phase 5
   const accounts = loadAllUserAccounts();
   return accounts.find(acc => acc.email.toLowerCase() === email.toLowerCase()) || null;
 };
 
 export const findUserById = (id: string): UserAccount | null => {
+  // This will be replaced by Supabase Auth in Phase 5
   const accounts = loadAllUserAccounts();
   return accounts.find(acc => acc.id === id) || null;
 };
 
 export const validateCredentials = (email: string, password: string): UserAccount | null => {
+  // This will be replaced by Supabase Auth in Phase 5
   const user = findUserByEmail(email);
   if (user && user.password === password) {
     return user;
@@ -66,11 +73,13 @@ export const validateCredentials = (email: string, password: string): UserAccoun
 };
 
 export const emailExists = (email: string): boolean => {
+  // This will be replaced by Supabase Auth in Phase 5
   return findUserByEmail(email) !== null;
 };
 
 // Session management
 export const saveCurrentSession = (session: UserSession): void => {
+  // This will be replaced by Supabase Auth in Phase 5
   try {
     localStorage.setItem(AUTH_STORAGE_KEYS.CURRENT_SESSION, JSON.stringify(session));
   } catch (error) {
@@ -79,6 +88,7 @@ export const saveCurrentSession = (session: UserSession): void => {
 };
 
 export const loadCurrentSession = (): UserSession | null => {
+  // This will be replaced by Supabase Auth in Phase 5
   try {
     const stored = localStorage.getItem(AUTH_STORAGE_KEYS.CURRENT_SESSION);
     return stored ? JSON.parse(stored) : null;
@@ -89,6 +99,7 @@ export const loadCurrentSession = (): UserSession | null => {
 };
 
 export const clearCurrentSession = (): void => {
+  // This will be replaced by Supabase Auth in Phase 5
   try {
     localStorage.removeItem(AUTH_STORAGE_KEYS.CURRENT_SESSION);
   } catch (error) {
@@ -98,6 +109,7 @@ export const clearCurrentSession = (): void => {
 
 // Development utilities
 export const getAllUserAccountsForDev = (): { email: string; id: string; lastLogin: string }[] => {
+  // This will be replaced by Supabase Auth in Phase 5
   const accounts = loadAllUserAccounts();
   return accounts.map(acc => ({
     email: acc.email,
@@ -107,6 +119,7 @@ export const getAllUserAccountsForDev = (): { email: string; id: string; lastLog
 };
 
 export const deleteUserAccount = (userId: string): void => {
+  // This will be replaced by Supabase Auth in Phase 5
   try {
     const accounts = loadAllUserAccounts();
     const filteredAccounts = accounts.filter(acc => acc.id !== userId);
@@ -114,4 +127,10 @@ export const deleteUserAccount = (userId: string): void => {
   } catch (error) {
     console.warn('Failed to delete user account:', error);
   }
+};
+
+// Migration utilities for Phase 5
+export const migrateToSupabaseAuth = async (userId: string): Promise<boolean> => {
+  // This will be implemented in Phase 5
+  return false;
 };

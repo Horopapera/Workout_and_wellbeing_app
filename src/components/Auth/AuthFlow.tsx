@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext';
 import LoginScreen from './LoginScreen';
 import SignupScreen from './SignupScreen';
 import { loadCurrentSession, findUserById, saveUserAccount } from '../../utils/authStorage';
-import { loadAppData } from '../../utils/localStorage';
+import { dataService } from '../../services/dataService';
 
 interface AuthFlowProps {
   onAuthenticated: () => void;
@@ -55,15 +55,61 @@ export default function AuthFlow({ onAuthenticated }: AuthFlowProps) {
       dispatch({ type: 'SET_USER', payload: userAccount.profile });
 
       // Load user's app data
-      const appData = loadAppData(userId);
-      if (appData) {
-        dispatch({ 
-          type: 'LOAD_USER_DATA', 
-          payload: { 
-            user: userAccount.profile, 
-            appData 
-          } 
+      try {
+        // Load all user data from data service
+        const [
+          foodEntries,
+          plannedFoodEntries,
+          mealTemplates,
+          workouts,
+          recipes,
+          wellnessEntries,
+          customFoods,
+          notifications,
+          quickAddEntries
+        ] = await Promise.all([
+          dataService.getFoodEntries(userId),
+          dataService.getPlannedFoodEntries(userId),
+          dataService.getMealTemplates(userId),
+          dataService.getWorkouts(userId),
+          dataService.getRecipes(userId),
+          dataService.getWellnessEntries(userId),
+          dataService.getCustomFoods(userId),
+          dataService.getNotifications(userId),
+          dataService.getQuickAddEntries(userId)
+        ]);
+
+        // Load all data into app state
+        dispatch({
+          type: 'LOAD_USER_DATA',
+          payload: {
+            user: userAccount.profile,
+            appData: {
+              foodEntries,
+              plannedFoodEntries,
+              mealTemplates,
+              workouts,
+              recipes,
+              wellnessEntries,
+              customFoods,
+              notifications: notifications.length > 0 ? notifications : [
+                {
+                  id: '1',
+                  type: 'reminder',
+                  title: 'Welcome back!',
+                  message: 'Continue your fitness journey today',
+                  timestamp: new Date().toISOString(),
+                  read: false
+                }
+              ],
+              quickAddEntries
+            }
+          }
         });
+      } catch (error) {
+        console.error('Failed to load user data:', error);
+        // Still proceed with authentication, but with empty data
+        dispatch({ type: 'SET_USER', payload: userAccount.profile });
       }
 
       onAuthenticated();
