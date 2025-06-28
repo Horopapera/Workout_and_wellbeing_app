@@ -9,12 +9,13 @@ import DateSelector from './DateSelector';
 import FoodLibrary from './FoodLibrary';
 import MacroGoalsSettings from './MacroGoalsSettings';
 import MealPlanner from './MealPlanner';
+import DietHistory from './DietHistory';
 import { FoodEntry, PlannedFoodEntry } from '../../types';
 
 export default function DietTracker() {
   const { state } = useApp();
   const { user, foodEntries, plannedFoodEntries, currentDate } = state;
-  const [activeTab, setActiveTab] = useState<'today' | 'planner'>('today');
+  const [activeTab, setActiveTab] = useState<'today' | 'planner' | 'history'>('today');
   const [showAddFood, setShowAddFood] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<'breakfast' | 'lunch' | 'dinner' | 'snack'>('breakfast');
   const [editingEntry, setEditingEntry] = useState<FoodEntry | null>(null);
@@ -145,6 +146,17 @@ export default function DietTracker() {
             <CalendarDays className="w-4 h-4" />
             <span className="text-sm font-medium">Meal Planner</span>
           </button>
+          <button
+            onClick={() => setActiveTab('history')}
+            className={`flex-1 flex items-center justify-center gap-2 py-4 border-b-2 transition-colors ${
+              activeTab === 'history'
+                ? 'border-orange-500 text-orange-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Calendar className="w-4 h-4" />
+            <span className="text-sm font-medium">History</span>
+          </button>
         </div>
       </div>
       
@@ -210,7 +222,11 @@ export default function DietTracker() {
             </div>
           </>
         ) : (
-          <MealPlanner />
+          activeTab === 'planner' ? (
+            <MealPlanner />
+          ) : (
+            <DietHistory />
+          )
         )}
       </div>
 
