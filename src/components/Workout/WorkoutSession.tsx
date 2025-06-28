@@ -140,7 +140,7 @@ export default function WorkoutSession({ workout, onClose, onComplete }: Workout
   };
 
   const progressPercentage = bankedReps > 0 ? (bankedReps / targetReps) * 100 : 0;
-  const circumference = 2 * Math.PI * 120; // radius = 120
+  const circumference = 2 * Math.PI * 100; // radius = 100 (smaller for mobile)
   const strokeDashoffset = circumference - (progressPercentage / 100) * circumference;
 
   const quickRepOptions = [1, 5, 10, Math.max(1, Math.floor(targetReps / 4))].filter((val, index, arr) => arr.indexOf(val) === index && val <= targetReps);
@@ -148,8 +148,8 @@ export default function WorkoutSession({ workout, onClose, onComplete }: Workout
   return (
     <div className="fixed inset-0 bg-gray-900 z-50 flex flex-col">
       {/* Header */}
-      <div className="bg-gradient-to-r from-emerald-500 to-blue-500 px-4 py-6 text-white">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-gradient-to-r from-emerald-500 to-blue-500 px-4 py-4 text-white flex-shrink-0">
+        <div className="flex items-center justify-between mb-3">
           <button
             onClick={onClose}
             className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
@@ -158,7 +158,7 @@ export default function WorkoutSession({ workout, onClose, onComplete }: Workout
           </button>
           
           <div className="text-center">
-            <h1 className="text-xl font-bold">{workout.name}</h1>
+            <h1 className="text-lg font-bold">{workout.name}</h1>
             <p className="text-white/80 text-sm">{formatTime(sessionTime)}</p>
           </div>
 
@@ -172,11 +172,11 @@ export default function WorkoutSession({ workout, onClose, onComplete }: Workout
 
         {/* Progress */}
         <div className="bg-white/10 rounded-lg p-3">
-          <div className="flex justify-between items-center text-sm">
+          <div className="flex justify-between items-center text-sm mb-2">
             <span>Exercise {currentExerciseIndex + 1} of {exercises.length}</span>
             <span>Set {currentSetIndex + 1} of {totalSets}</span>
           </div>
-          <div className="w-full bg-white/20 rounded-full h-2 mt-2">
+          <div className="w-full bg-white/20 rounded-full h-2">
             <div 
               className="bg-white h-2 rounded-full transition-all duration-300"
               style={{ width: `${((currentExerciseIndex * totalSets + currentSetIndex + 1) / (exercises.length * totalSets)) * 100}%` }}
@@ -185,116 +185,102 @@ export default function WorkoutSession({ workout, onClose, onComplete }: Workout
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-50">
-        {/* Exercise Info */}
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">{currentExercise?.exercise.name}</h2>
-          <p className="text-gray-600">Set {currentSetIndex + 1} • Target: {targetReps} reps</p>
-          {currentSet?.weight && (
-            <p className="text-gray-600">Weight: {currentSet.weight}kg</p>
-          )}
-        </div>
-
-        {/* Circular Progress */}
-        <div className="relative mb-8">
-          <svg width="280" height="280" className="transform -rotate-90">
-            {/* Background circle */}
-            <circle
-              cx="140"
-              cy="140"
-              r="120"
-              stroke="#e5e7eb"
-              strokeWidth="12"
-              fill="transparent"
-            />
-            {/* Progress circle */}
-            <circle
-              cx="140"
-              cy="140"
-              r="120"
-              stroke="url(#gradient)"
-              strokeWidth="12"
-              fill="transparent"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              strokeLinecap="round"
-              className="transition-all duration-300"
-            />
-            <defs>
-              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#10b981" />
-                <stop offset="100%" stopColor="#3b82f6" />
-              </linearGradient>
-            </defs>
-          </svg>
-          
-          {/* Center content */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-5xl font-bold text-gray-800">{bankedReps}</span>
-            <span className="text-lg text-gray-600">of {targetReps}</span>
+      {/* Main Content - Scrollable */}
+      <div className="flex-1 overflow-y-auto bg-gray-50">
+        <div className="px-4 py-6 space-y-6">
+          {/* Exercise Info */}
+          <div className="text-center">
+            <h2 className="text-xl font-bold text-gray-800 mb-1">{currentExercise?.exercise.name}</h2>
+            <p className="text-gray-600 text-sm">Set {currentSetIndex + 1} • Target: {targetReps} reps</p>
+            {currentSet?.weight && (
+              <p className="text-gray-600 text-sm">Weight: {currentSet.weight}kg</p>
+            )}
           </div>
-        </div>
 
-        {/* Quick Rep Buttons */}
-        <div className="grid grid-cols-4 gap-4 mb-8 w-full max-w-sm">
-          {quickRepOptions.map(reps => (
-            <button
-              key={reps}
-              onClick={() => handleBankReps(reps)}
-              disabled={bankedReps >= targetReps}
-              className="bg-white border-2 border-emerald-500 text-emerald-600 py-6 px-4 rounded-xl font-bold text-xl hover:bg-emerald-50 active:bg-emerald-100 active:scale-95 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg touch-manipulation select-none"
-              style={{ 
-                WebkitTapHighlightColor: 'transparent',
-                WebkitUserSelect: 'none',
-                userSelect: 'none'
-              }}
-              onTouchStart={(e) => {
-                e.currentTarget.style.transform = 'scale(0.95)';
-                e.currentTarget.style.backgroundColor = '#d1fae5';
-              }}
-              onTouchEnd={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.backgroundColor = '#f0fdf4';
-              }}
-            >
-              +{reps}
-            </button>
-          ))}
-        </div>
+          {/* Circular Progress */}
+          <div className="flex justify-center">
+            <div className="relative">
+              <svg width="220" height="220" className="transform -rotate-90">
+                {/* Background circle */}
+                <circle
+                  cx="110"
+                  cy="110"
+                  r="100"
+                  stroke="#e5e7eb"
+                  strokeWidth="10"
+                  fill="transparent"
+                />
+                {/* Progress circle */}
+                <circle
+                  cx="110"
+                  cy="110"
+                  r="100"
+                  stroke="url(#gradient)"
+                  strokeWidth="10"
+                  fill="transparent"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={strokeDashoffset}
+                  strokeLinecap="round"
+                  className="transition-all duration-300"
+                />
+                <defs>
+                  <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#10b981" />
+                    <stop offset="100%" stopColor="#3b82f6" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              
+              {/* Center content */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-4xl font-bold text-gray-800">{bankedReps}</span>
+                <span className="text-sm text-gray-600">of {targetReps}</span>
+              </div>
+            </div>
+          </div>
 
-        {/* Add Single Rep Button */}
-        <div className="mb-8 w-full max-w-sm">
+          {/* Quick Rep Buttons */}
+          <div className="grid grid-cols-4 gap-3">
+            {quickRepOptions.map(reps => (
+              <button
+                key={reps}
+                onClick={() => handleBankReps(reps)}
+                disabled={bankedReps >= targetReps}
+                className="bg-white border-2 border-emerald-500 text-emerald-600 py-4 px-3 rounded-xl font-bold text-lg hover:bg-emerald-50 active:bg-emerald-100 active:scale-95 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg touch-manipulation select-none"
+                style={{ 
+                  WebkitTapHighlightColor: 'transparent',
+                  WebkitUserSelect: 'none',
+                  userSelect: 'none'
+                }}
+              >
+                +{reps}
+              </button>
+            ))}
+          </div>
+
+          {/* Large Add Rep Button */}
           <button
             onClick={() => handleBankReps(1)}
             disabled={bankedReps >= targetReps}
-            className="w-full bg-gradient-to-r from-emerald-500 to-blue-500 text-white py-6 px-6 rounded-xl font-bold text-2xl hover:from-emerald-600 hover:to-blue-600 active:from-emerald-700 active:to-blue-700 active:scale-95 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg touch-manipulation select-none flex items-center justify-center gap-3"
+            className="w-full bg-gradient-to-r from-emerald-500 to-blue-500 text-white py-5 px-6 rounded-xl font-bold text-xl hover:from-emerald-600 hover:to-blue-600 active:from-emerald-700 active:to-blue-700 active:scale-95 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg touch-manipulation select-none flex items-center justify-center gap-3"
             style={{ 
               WebkitTapHighlightColor: 'transparent',
               WebkitUserSelect: 'none',
               userSelect: 'none'
             }}
-            onTouchStart={(e) => {
-              e.currentTarget.style.transform = 'scale(0.95)';
-            }}
-            onTouchEnd={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
           >
-            <span className="text-3xl">+</span>
+            <span className="text-2xl">+</span>
             <span>Add Rep</span>
           </button>
-        </div>
 
-        {/* Custom Rep Input */}
-        <div className="mb-8 w-full max-w-sm">
-          <div className="flex gap-2">
+          {/* Custom Rep Input */}
+          <div className="flex gap-3">
             <input
               type="number"
               min="1"
               max={targetReps - bankedReps}
               placeholder="Custom"
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-center font-medium text-lg"
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-center font-medium text-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               onKeyPress={(e) => {
                 if (e.key === 'Enter') {
                   const value = parseInt((e.target as HTMLInputElement).value);
@@ -319,20 +305,25 @@ export default function WorkoutSession({ workout, onClose, onComplete }: Workout
               Add
             </button>
           </div>
-        </div>
 
-        {/* Reset Button */}
-        <button
-          onClick={() => setBankedReps(0)}
-          className="mb-8 flex items-center gap-2 text-gray-600 hover:text-gray-800 active:text-gray-900 transition-colors py-2 px-4 rounded-lg hover:bg-gray-100"
-        >
-          <RotateCcw className="w-4 h-4" />
-          Reset
-        </button>
+          {/* Reset Button */}
+          <div className="flex justify-center">
+            <button
+              onClick={() => setBankedReps(0)}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-800 active:text-gray-900 transition-colors py-2 px-4 rounded-lg hover:bg-gray-100"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Reset
+            </button>
+          </div>
+
+          {/* Extra spacing for bottom actions */}
+          <div className="h-20"></div>
+        </div>
       </div>
 
-      {/* Bottom Actions */}
-      <div className="bg-white border-t border-gray-200 p-4 pb-8 safe-area-inset-bottom">
+      {/* Bottom Actions - Fixed */}
+      <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0">
         <div className="flex gap-3">
           <button
             onClick={handleSkipSet}
