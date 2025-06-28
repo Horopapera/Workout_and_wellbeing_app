@@ -18,6 +18,12 @@ export interface User {
     fat: number;
   };
   onboardingCompleted: boolean;
+  customMacroGoals?: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  };
 }
 
 export interface Food {
@@ -31,6 +37,9 @@ export interface Food {
   fatPer100g: number;
   category: string;
   isCustom?: boolean;
+  createdBy?: string; // user ID for custom foods
+  lastUsed?: string; // ISO date string
+  usageCount?: number;
 }
 
 export interface FoodEntry {

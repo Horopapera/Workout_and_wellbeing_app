@@ -16,12 +16,18 @@ interface DailyNutritionSummaryProps {
 export default function DailyNutritionSummary({ nutrition, targets, selectedDate }: DailyNutritionSummaryProps) {
   const isToday = selectedDate === new Date().toISOString().split('T')[0];
   
+  // Use custom macro goals if set, otherwise use calculated targets
+  const dailyCalories = targets.customMacroGoals?.calories || targets.dailyCalories;
+  const proteinTarget = targets.customMacroGoals?.protein || targets.macroTargets.protein;
+  const carbsTarget = targets.customMacroGoals?.carbs || targets.macroTargets.carbs;
+  const fatTarget = targets.customMacroGoals?.fat || targets.macroTargets.fat;
+  
   const macros = [
     {
       icon: Flame,
       label: 'Calories',
       value: Math.round(nutrition.calories),
-      target: targets.dailyCalories,
+      target: dailyCalories,
       unit: '',
       color: 'from-orange-500 to-red-500',
       bgColor: 'bg-orange-50'
@@ -30,7 +36,7 @@ export default function DailyNutritionSummary({ nutrition, targets, selectedDate
       icon: Zap,
       label: 'Protein',
       value: Math.round(nutrition.protein),
-      target: targets.macroTargets.protein,
+      target: proteinTarget,
       unit: 'g',
       color: 'from-blue-500 to-purple-500',
       bgColor: 'bg-blue-50'
@@ -39,7 +45,7 @@ export default function DailyNutritionSummary({ nutrition, targets, selectedDate
       icon: Wheat,
       label: 'Carbs',
       value: Math.round(nutrition.carbs),
-      target: targets.macroTargets.carbs,
+      target: carbsTarget,
       unit: 'g',
       color: 'from-green-500 to-emerald-500',
       bgColor: 'bg-green-50'
@@ -48,7 +54,7 @@ export default function DailyNutritionSummary({ nutrition, targets, selectedDate
       icon: Droplet,
       label: 'Fat',
       value: Math.round(nutrition.fat),
-      target: targets.macroTargets.fat,
+      target: fatTarget,
       unit: 'g',
       color: 'from-yellow-500 to-orange-500',
       bgColor: 'bg-yellow-50'
@@ -75,7 +81,7 @@ export default function DailyNutritionSummary({ nutrition, targets, selectedDate
           {isToday ? "Today's" : "Daily"} Nutrition
         </h2>
         <div className="text-sm text-gray-600">
-          {Math.round(nutrition.calories)} / {targets.dailyCalories} cal
+          {Math.round(nutrition.calories)} / {dailyCalories} cal
         </div>
       </div>
 
@@ -118,13 +124,13 @@ export default function DailyNutritionSummary({ nutrition, targets, selectedDate
       <div className="border-t pt-4">
         <h3 className="font-medium text-gray-800 mb-2">Quick Insights</h3>
         <div className="space-y-1">
-          {nutrition.calories < targets.dailyCalories * 0.5 && (
+          {nutrition.calories < dailyCalories * 0.5 && (
             <p className="text-sm text-orange-600">🍽️ You're under 50% of your calorie goal</p>
           )}
-          {nutrition.protein >= targets.macroTargets.protein && (
+          {nutrition.protein >= proteinTarget && (
             <p className="text-sm text-emerald-600">💪 Protein goal achieved!</p>
           )}
-          {nutrition.calories > targets.dailyCalories * 1.1 && (
+          {nutrition.calories > dailyCalories * 1.1 && (
             <p className="text-sm text-red-600">⚠️ You've exceeded your calorie goal</p>
           )}
           {nutrition.calories === 0 && (

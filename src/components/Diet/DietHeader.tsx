@@ -1,14 +1,16 @@
 import React from 'react';
-import { Calendar, ChevronDown } from 'lucide-react';
+import { Calendar, ChevronDown, Library, Target } from 'lucide-react';
 
 interface DietHeaderProps {
   selectedDate: string;
   onDateClick: () => void;
   isToday: boolean;
   isPastDate: boolean;
+  onShowFoodLibrary: () => void;
+  onShowMacroGoals: () => void;
 }
 
-export default function DietHeader({ selectedDate, onDateClick, isToday, isPastDate }: DietHeaderProps) {
+export default function DietHeader({ selectedDate, onDateClick, isToday, isPastDate, onShowFoodLibrary, onShowMacroGoals }: DietHeaderProps) {
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { 
@@ -32,8 +34,22 @@ export default function DietHeader({ selectedDate, onDateClick, isToday, isPastD
           <p className="text-white/80">Track your daily nutrition</p>
         </div>
         
-        <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-          <Calendar className="w-6 h-6" />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onShowFoodLibrary}
+            className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
+          >
+            <Library className="w-5 h-5" />
+          </button>
+          <button
+            onClick={onShowMacroGoals}
+            className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
+          >
+            <Target className="w-5 h-5" />
+          </button>
+          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+            <Calendar className="w-5 h-5" />
+          </div>
         </div>
       </div>
       

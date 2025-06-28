@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import { X, Search, Save, Calculator } from 'lucide-react';
+import { X, Search, Save, Calculator, Library, Plus } from 'lucide-react';
 import { FoodEntry, Food } from '../../types';
 import { mockFoods } from '../../data/mockData';
 
@@ -12,11 +12,13 @@ interface AddFoodModalProps {
 }
 
 export default function AddFoodModal({ mealType, selectedDate, editingEntry, onClose }: AddFoodModalProps) {
-  const { dispatch } = useApp();
+  const { state, dispatch } = useApp();
+  const { customFoods, foodEntries } = state;
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFood, setSelectedFood] = useState<Food | null>(editingEntry?.food || null);
   const [amount, setAmount] = useState(editingEntry?.amount.toString() || '100');
   const [showCustomFood, setShowCustomFood] = useState(false);
+  const [showLibraryView, setShowLibraryView] = useState(false);
   const [customFood, setCustomFood] = useState({
     name: '',
     caloriesPer100g: '',
@@ -25,8 +27,26 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
     fatPer100g: ''
   });
 
+  // Combine built-in foods with custom foods
+  const allFoods = [...mockFoods, ...customFoods];
+  
+  // Get recent foods (foods used in last 30 days)
+  const recentFoodIds = foodEntries
+    .filter(entry => {
+      const entryDate = new Date(entry.date);
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      return entryDate >= thirtyDaysAgo;
+    })
+    .map(entry => entry.foodId);
+  
+  const recentFoods = allFoods
+    .filter(food => recentFoodIds.includes(food.id))
+    .sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0))
+    .slice(0, 5);
+
   // Filter foods based on search
-  const filteredFoods = mockFoods.filter(food =>
+  const filteredFoods = allFoods.filter(food =>
     food.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     food.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -78,6 +98,9 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
       dispatch({ type: 'ADD_FOOD_ENTRY', payload: foodEntry });
     }
 
+    // Update food usage tracking
+    dispatch({ type: 'UPDATE_FOOD_USAGE', payload: selectedFood.id });
+
     onClose();
   };
 
@@ -95,14 +118,22 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
       carbsPer100g: Number(customFood.carbsPer100g) || 0,
       fatPer100g: Number(customFood.fatPer100g) || 0,
       category: 'Custom',
-      isCustom: true
+      isCustom: true,
+      createdBy: 'user', // In a real app, this would be the actual user ID
+      usageCount: 0
     };
 
+    dispatch({ type: 'ADD_CUSTOM_FOOD', payload: newFood });
     setSelectedFood(newFood);
     setShowCustomFood(false);
     setSearchTerm('');
   };
 
+  const handleSelectFood = (food: Food) => {
+    setSelectedFood(food);
+    setShowLibraryView(false);
+    setSearchTerm('');
+  };
   return (
     <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50">
       <div className="bg-white rounded-t-2xl w-full max-w-md max-h-[85vh] flex flex-col mb-20">
@@ -126,8 +157,55 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {!selectedFood ? (
             <>
+              {/* Quick Actions */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowLibraryView(true)}
+                  className="flex-1 bg-orange-50 border border-orange-200 text-orange-700 py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-orange-100 transition-colors"
+                >
+                  <Library className="w-4 h-4" />
+                  Browse Library
+                </button>
+                <button
+                  onClick={() => setShowCustomFood(true)}
+                  className="flex-1 bg-emerald-50 border border-emerald-200 text-emerald-700 py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-emerald-100 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create Food
+                </button>
+              </div>
+
+              {/* Recent Foods */}
+              {recentFoods.length > 0 && !showLibraryView && (
+                <div>
+                  <h3 className="font-medium text-gray-800 mb-3">Recent Foods</h3>
+                  <div className="space-y-2">
+                    {recentFoods.map(food => (
+                      <button
+                        key={food.id}
+                        onClick={() => handleSelectFood(food)}
+                        className="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium text-gray-800">{food.name}</div>
+                            <div className="text-sm text-gray-600">
+                              {food.category} • {food.caloriesPer100g} cal/100g
+                            </div>
+                          </div>
+                          {food.isCustom && (
+                            <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded">Custom</span>
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Search */}
-              <div>
+              {!showLibraryView && (
+                <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Search Foods
                 </label>
@@ -141,30 +219,33 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
                   />
                   <Search className="absolute right-3 top-3.5 w-4 h-4 text-gray-400" />
                 </div>
-              </div>
+                </div>
+              )}
 
               {/* Food List */}
-              <div>
+              {!showLibraryView && searchTerm && (
+                <div>
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-medium text-gray-800">Select Food</h3>
-                  <button
-                    onClick={() => setShowCustomFood(true)}
-                    className="text-orange-600 hover:text-orange-700 text-sm font-medium"
-                  >
-                    + Add Custom
-                  </button>
                 </div>
                 
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {filteredFoods.map(food => (
                     <button
                       key={food.id}
-                      onClick={() => setSelectedFood(food)}
+                      onClick={() => handleSelectFood(food)}
                       className="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                     >
-                      <div className="font-medium text-gray-800">{food.name}</div>
-                      <div className="text-sm text-gray-600">
-                        {food.category} • {food.caloriesPer100g} cal/100g
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium text-gray-800">{food.name}</div>
+                          <div className="text-sm text-gray-600">
+                            {food.category} • {food.caloriesPer100g} cal/100g
+                          </div>
+                        </div>
+                        {food.isCustom && (
+                          <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded">Custom</span>
+                        )}
                       </div>
                     </button>
                   ))}
@@ -181,7 +262,55 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
                     </div>
                   )}
                 </div>
-              </div>
+                </div>
+              )}
+
+              {/* Library View */}
+              {showLibraryView && (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-medium text-gray-800">Food Library</h3>
+                    <button
+                      onClick={() => setShowLibraryView(false)}
+                      className="text-orange-600 hover:text-orange-700 text-sm font-medium"
+                    >
+                      Back to Search
+                    </button>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                      placeholder="Search library..."
+                    />
+                  </div>
+                  
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {filteredFoods.map(food => (
+                      <button
+                        key={food.id}
+                        onClick={() => handleSelectFood(food)}
+                        className="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium text-gray-800">{food.name}</div>
+                            <div className="text-sm text-gray-600">
+                              {food.category} • {food.caloriesPer100g} cal/100g
+                            </div>
+                          </div>
+                          {food.isCustom && (
+                            <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded">Custom</span>
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Custom Food Form */}
               {showCustomFood && (

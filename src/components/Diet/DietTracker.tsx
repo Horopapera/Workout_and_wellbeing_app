@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Calendar, Plus } from 'lucide-react';
+import { Calendar, Plus, Settings } from 'lucide-react';
 import DietHeader from './DietHeader';
 import DailyNutritionSummary from './DailyNutritionSummary';
 import MealSection from './MealSection';
 import AddFoodModal from './AddFoodModal';
 import DateSelector from './DateSelector';
+import FoodLibrary from './FoodLibrary';
+import MacroGoalsSettings from './MacroGoalsSettings';
 import { FoodEntry } from '../../types';
 
 export default function DietTracker() {
@@ -15,6 +17,8 @@ export default function DietTracker() {
   const [selectedMeal, setSelectedMeal] = useState<'breakfast' | 'lunch' | 'dinner' | 'snack'>('breakfast');
   const [editingEntry, setEditingEntry] = useState<FoodEntry | null>(null);
   const [showDateSelector, setShowDateSelector] = useState(false);
+  const [showFoodLibrary, setShowFoodLibrary] = useState(false);
+  const [showMacroGoals, setShowMacroGoals] = useState(false);
   const [selectedDate, setSelectedDate] = useState(currentDate);
 
   if (!user) return null;
@@ -70,6 +74,8 @@ export default function DietTracker() {
         onDateClick={() => setShowDateSelector(true)}
         isToday={isToday}
         isPastDate={isPastDate}
+        onShowFoodLibrary={() => setShowFoodLibrary(true)}
+        onShowMacroGoals={() => setShowMacroGoals(true)}
       />
       
       <div className="px-4 space-y-6">
@@ -124,6 +130,19 @@ export default function DietTracker() {
         />
       )}
 
+      {/* Food Library Modal */}
+      {showFoodLibrary && (
+        <FoodLibrary
+          onClose={() => setShowFoodLibrary(false)}
+        />
+      )}
+
+      {/* Macro Goals Settings Modal */}
+      {showMacroGoals && (
+        <MacroGoalsSettings
+          onClose={() => setShowMacroGoals(false)}
+        />
+      )}
       {/* Date Selector Modal */}
       {showDateSelector && (
         <DateSelector
