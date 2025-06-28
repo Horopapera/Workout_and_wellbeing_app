@@ -96,7 +96,7 @@ export default function WorkoutForm({ workout, onClose }: WorkoutFormProps) {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-6 min-h-0">
+        <div className="flex-1 overflow-y-auto p-4 space-y-6 min-h-0 max-h-[calc(90vh-200px)]">
           {/* Workout Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -126,7 +126,7 @@ export default function WorkoutForm({ workout, onClose }: WorkoutFormProps) {
 
             <div className="space-y-4">
               {exercises.map((exercise, index) => (
-                <div key={exercise.id} className="bg-gray-50 rounded-lg p-4">
+                <div key={exercise.id} className="bg-gray-50 rounded-lg p-4 relative">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-medium text-gray-600">
                       Exercise {index + 1}
@@ -181,6 +181,7 @@ export default function WorkoutForm({ workout, onClose }: WorkoutFormProps) {
             </button>
             <button
               onClick={handleSave}
+              disabled={!name.trim() || exercises.length === 0}
               className="flex-1 bg-gradient-to-r from-emerald-500 to-blue-500 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:from-emerald-600 hover:to-blue-600 transition-all duration-200"
             >
               <Save className="w-4 h-4" />

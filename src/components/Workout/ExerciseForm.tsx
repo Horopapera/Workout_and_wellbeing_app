@@ -11,6 +11,7 @@ interface ExerciseFormProps {
 export default function ExerciseForm({ exercise, onChange }: ExerciseFormProps) {
   const [showExerciseSearch, setShowExerciseSearch] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [inputId] = useState(() => `exercise-input-${Date.now()}-${Math.random()}`);
 
   const filteredExercises = mockExercises.filter(ex =>
     ex.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -79,6 +80,7 @@ export default function ExerciseForm({ exercise, onChange }: ExerciseFormProps) 
         </label>
         <div className="relative">
           <input
+            id={inputId}
             type="text"
             value={exercise.exercise.name}
             onChange={(e) => handleCustomExerciseName(e.target.value)}
@@ -91,7 +93,7 @@ export default function ExerciseForm({ exercise, onChange }: ExerciseFormProps) 
 
         {/* Exercise Search Dropdown */}
         {showExerciseSearch && (
-          <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-y-auto">
             <div className="p-2">
               <input
                 type="text"
@@ -135,6 +137,14 @@ export default function ExerciseForm({ exercise, onChange }: ExerciseFormProps) 
               Close
             </button>
           </div>
+        )}
+        
+        {/* Backdrop to close dropdown when clicking outside */}
+        {showExerciseSearch && (
+          <div 
+            className="fixed inset-0 z-40" 
+            onClick={() => setShowExerciseSearch(false)}
+          />
         )}
       </div>
 
