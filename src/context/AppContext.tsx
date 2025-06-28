@@ -15,6 +15,7 @@ type AppAction =
   | { type: 'ADD_FOOD_ENTRY'; payload: FoodEntry }
   | { type: 'ADD_WORKOUT'; payload: Workout }
   | { type: 'UPDATE_WORKOUT'; payload: Workout }
+  | { type: 'DELETE_WORKOUT'; payload: string }
   | { type: 'ADD_RECIPE'; payload: Recipe }
   | { type: 'ADD_WELLNESS_ENTRY'; payload: WellnessEntry }
   | { type: 'SET_CURRENT_DATE'; payload: string };
@@ -42,6 +43,11 @@ function appReducer(state: AppState, action: AppAction): AppState {
         workouts: state.workouts.map(w => 
           w.id === action.payload.id ? action.payload : w
         )
+      };
+    case 'DELETE_WORKOUT':
+      return {
+        ...state,
+        workouts: state.workouts.filter(w => w.id !== action.payload)
       };
     case 'ADD_RECIPE':
       return { ...state, recipes: [...state.recipes, action.payload] };

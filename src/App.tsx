@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import OnboardingFlow from './components/Onboarding/OnboardingFlow';
 import Dashboard from './components/Dashboard/Dashboard';
+import WorkoutPlans from './components/Workout/WorkoutPlans';
 import Navigation from './components/Layout/Navigation';
 
 function AppContent() {
@@ -19,18 +20,7 @@ function AppContent() {
         return <Dashboard />;
       case 'workout':
         return (
-          <div className="max-w-md mx-auto bg-gray-50 min-h-screen pb-20">
-            <div className="bg-gradient-to-r from-emerald-500 to-blue-500 px-4 py-8 text-white">
-              <h1 className="text-2xl font-bold">Workout Plans</h1>
-              <p className="text-white/80">Track and plan your workouts</p>
-            </div>
-            <div className="p-4">
-              <div className="bg-white rounded-xl p-6 text-center">
-                <p className="text-gray-600">Workout features coming soon!</p>
-                <p className="text-sm text-gray-500 mt-2">Create routines, track progress, and more.</p>
-              </div>
-            </div>
-          </div>
+          <WorkoutPlans />
         );
       case 'diet':
         return (
