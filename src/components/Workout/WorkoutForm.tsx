@@ -79,7 +79,7 @@ export default function WorkoutForm({ workout, onClose }: WorkoutFormProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50">
-      <div className="bg-white rounded-t-2xl w-full max-w-md max-h-[90vh] flex flex-col">
+      <div className="bg-white rounded-t-2xl w-full max-w-md max-h-[85vh] flex flex-col mb-20">
         {/* Header */}
         <div className="bg-gradient-to-r from-emerald-500 to-blue-500 px-4 py-6 text-white">
           <div className="flex items-center justify-between">
@@ -96,7 +96,7 @@ export default function WorkoutForm({ workout, onClose }: WorkoutFormProps) {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-6 min-h-0 max-h-[calc(90vh-200px)]">
+        <div className="flex-1 overflow-y-auto p-4 space-y-6 min-h-0">
           {/* Workout Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -171,7 +171,7 @@ export default function WorkoutForm({ workout, onClose }: WorkoutFormProps) {
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-200 p-4">
+        <div className="border-t border-gray-200 p-4 bg-white">
           <div className="flex gap-3">
             <button
               onClick={onClose}
@@ -182,7 +182,11 @@ export default function WorkoutForm({ workout, onClose }: WorkoutFormProps) {
             <button
               onClick={handleSave}
               disabled={!name.trim() || exercises.length === 0}
-              className="flex-1 bg-gradient-to-r from-emerald-500 to-blue-500 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:from-emerald-600 hover:to-blue-600 transition-all duration-200"
+              className={`flex-1 py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-200 ${
+                !name.trim() || exercises.length === 0
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white hover:from-emerald-600 hover:to-blue-600'
+              }`}
             >
               <Save className="w-4 h-4" />
               Save Workout
