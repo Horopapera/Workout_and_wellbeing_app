@@ -1,15 +1,17 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { Play, Edit3, Trash2, Calendar, CheckCircle2, Clock } from 'lucide-react';
+import { Play, Edit3, Trash2, Calendar, CheckCircle2, Clock, CalendarPlus } from 'lucide-react';
 import { Workout } from '../../types';
 import EmptyState from '../Shared/EmptyState';
 
 interface WorkoutListProps {
   onAddWorkout: () => void;
   onEditWorkout: (workout: Workout) => void;
+  onStartWorkout: (workout: Workout) => void;
+  onScheduleWorkout: (workout: Workout) => void;
 }
 
-export default function WorkoutList({ onAddWorkout, onEditWorkout }: WorkoutListProps) {
+export default function WorkoutList({ onAddWorkout, onEditWorkout, onStartWorkout, onScheduleWorkout }: WorkoutListProps) {
   const { state, dispatch } = useApp();
   const { workouts, currentDate } = state;
 
@@ -17,23 +19,6 @@ export default function WorkoutList({ onAddWorkout, onEditWorkout }: WorkoutList
     if (confirm('Are you sure you want to delete this workout?')) {
       dispatch({ type: 'DELETE_WORKOUT', payload: workoutId });
     }
-  };
-
-  const handleStartWorkout = (workout: Workout) => {
-    // Create a new workout instance for today
-    const newWorkout: Workout = {
-      ...workout,
-      id: Date.now().toString(),
-      date: currentDate,
-      completed: false,
-      duration: undefined,
-      exercises: workout.exercises.map(ex => ({
-        ...ex,
-        id: Date.now().toString() + Math.random(),
-        sets: ex.sets.map(set => ({ ...set, completed: false }))
-      }))
-    };
-    dispatch({ type: 'ADD_WORKOUT', payload: newWorkout });
   };
 
   const handleCompleteWorkout = (workout: Workout) => {
@@ -99,9 +84,15 @@ export default function WorkoutList({ onAddWorkout, onEditWorkout }: WorkoutList
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => onEditWorkout(workout)}
-                    className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 transition-colors"
+                    className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center hover:bg-blue-100 transition-colors"
                   >
-                    <Edit3 className="w-4 h-4 text-gray-600" />
+                    <Edit3 className="w-4 h-4 text-blue-600" />
+                  </button>
+                  <button
+                    onClick={() => onScheduleWorkout(workout)}
+                    className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center hover:bg-emerald-100 transition-colors"
+                  >
+                    <CalendarPlus className="w-4 h-4 text-emerald-600" />
                   </button>
                   <button
                     onClick={() => handleDeleteWorkout(workout.id)}
@@ -113,7 +104,7 @@ export default function WorkoutList({ onAddWorkout, onEditWorkout }: WorkoutList
               </div>
 
               <button
-                onClick={() => handleStartWorkout(workout)}
+                onClick={() => onStartWorkout(workout)}
                 className="w-full bg-gradient-to-r from-emerald-500 to-blue-500 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:from-emerald-600 hover:to-blue-600 transition-all duration-200"
               >
                 <Play className="w-4 h-4" />

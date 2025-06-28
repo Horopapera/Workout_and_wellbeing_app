@@ -3,15 +3,20 @@ import { useApp } from '../../context/AppContext';
 import { Plus, Calendar, TrendingUp, Clock } from 'lucide-react';
 import WorkoutList from './WorkoutList';
 import WorkoutForm from './WorkoutForm';
+import WorkoutSession from './WorkoutSession';
+import WorkoutScheduler from './WorkoutScheduler';
 import WorkoutCalendar from './WorkoutCalendar';
 import WorkoutHistory from './WorkoutHistory';
 import { Workout } from '../../types';
 
 export default function WorkoutPlans() {
-  const { state } = useApp();
+  const { state, dispatch } = useApp();
   const [activeTab, setActiveTab] = useState<'routines' | 'calendar' | 'history'>('routines');
   const [showWorkoutForm, setShowWorkoutForm] = useState(false);
+  const [showWorkoutSession, setShowWorkoutSession] = useState(false);
+  const [showWorkoutScheduler, setShowWorkoutScheduler] = useState(false);
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
+  const [activeWorkout, setActiveWorkout] = useState<Workout | null>(null);
 
   const { workouts, currentDate } = state;
 
@@ -32,6 +37,45 @@ export default function WorkoutPlans() {
   const handleCloseForm = () => {
     setShowWorkoutForm(false);
     setEditingWorkout(null);
+  };
+
+  const handleStartWorkout = (workout: Workout) => {
+    // Create a new workout instance for today
+    const sessionWorkout: Workout = {
+      ...workout,
+      id: Date.now().toString(),
+      date: currentDate,
+      completed: false,
+      duration: undefined,
+      exercises: workout.exercises.map(ex => ({
+        ...ex,
+        id: Date.now().toString() + Math.random(),
+        sets: ex.sets.map(set => ({ ...set, completed: false }))
+      }))
+    };
+    setActiveWorkout(sessionWorkout);
+    setShowWorkoutSession(true);
+  };
+
+  const handleCompleteWorkoutSession = (completedWorkout: Workout) => {
+    dispatch({ type: 'ADD_WORKOUT', payload: completedWorkout });
+    setShowWorkoutSession(false);
+    setActiveWorkout(null);
+  };
+
+  const handleCloseWorkoutSession = () => {
+    setShowWorkoutSession(false);
+    setActiveWorkout(null);
+  };
+
+  const handleScheduleWorkout = (workout: Workout) => {
+    setActiveWorkout(workout);
+    setShowWorkoutScheduler(true);
+  };
+
+  const handleCloseScheduler = () => {
+    setShowWorkoutScheduler(false);
+    setActiveWorkout(null);
   };
 
   const tabs = [
@@ -98,6 +142,8 @@ export default function WorkoutPlans() {
           <WorkoutList 
             onAddWorkout={handleAddWorkout}
             onEditWorkout={handleEditWorkout}
+            onStartWorkout={handleStartWorkout}
+            onScheduleWorkout={handleScheduleWorkout}
           />
         )}
         {activeTab === 'calendar' && <WorkoutCalendar />}
@@ -109,6 +155,23 @@ export default function WorkoutPlans() {
         <WorkoutForm
           workout={editingWorkout}
           onClose={handleCloseForm}
+        />
+      )}
+
+      {/* Workout Session Modal */}
+      {showWorkoutSession && activeWorkout && (
+        <WorkoutSession
+          workout={activeWorkout}
+          onClose={handleCloseWorkoutSession}
+          onComplete={handleCompleteWorkoutSession}
+        />
+      )}
+
+      {/* Workout Scheduler Modal */}
+      {showWorkoutScheduler && activeWorkout && (
+        <WorkoutScheduler
+          workout={activeWorkout}
+          onClose={handleCloseScheduler}
         />
       )}
     </div>

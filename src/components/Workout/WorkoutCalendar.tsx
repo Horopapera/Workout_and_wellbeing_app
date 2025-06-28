@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { ChevronLeft, ChevronRight, Calendar, CheckCircle2, Clock, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, CheckCircle2, Clock, Plus, CalendarPlus } from 'lucide-react';
 
 export default function WorkoutCalendar() {
   const { state } = useApp();
@@ -153,18 +153,18 @@ export default function WorkoutCalendar() {
       {/* Today's Workouts */}
       <div className="bg-white rounded-xl shadow-sm p-4">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">
-          {isToday(today.getDate()) ? "Today's Workouts" : `Workouts for ${monthNames[currentDate.getMonth()]} ${today.getDate()}`}
+          Today's Workouts
         </h3>
         
-        {getWorkoutsForDay(today.getDate()).length === 0 ? (
+        {getWorkoutsForDay(new Date().getDate()).length === 0 ? (
           <div className="text-center py-6 text-gray-500">
-            <Calendar className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+            <CalendarPlus className="w-8 h-8 mx-auto mb-2 text-gray-400" />
             <p>No workouts scheduled for today</p>
-            <p className="text-sm">Add a workout to get started!</p>
+            <p className="text-sm">Schedule a workout routine to get started!</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {getWorkoutsForDay(today.getDate()).map(workout => (
+            {getWorkoutsForDay(new Date().getDate()).map(workout => (
               <div key={workout.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                   workout.completed ? 'bg-emerald-100 text-emerald-600' : 'bg-orange-100 text-orange-600'
