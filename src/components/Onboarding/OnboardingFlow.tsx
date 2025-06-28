@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { User } from '../../types';
 import { useApp } from '../../context/AppContext';
+import { supabase } from '../../services/supabaseClient';
 import PersonalInfo from './PersonalInfo';
 import Goals from './Goals';
 import Preferences from './Preferences';
@@ -71,9 +72,12 @@ export default function OnboardingFlow() {
   const completeOnboarding = () => {
     const calories = calculateCalories(userData);
     const macros = calculateMacros(calories);
+
+    // Get the current user ID from Supabase
+    const userId = supabase.auth.getUser().then(({ data }) => data.user?.id);
     
     const user: User = {
-      id: `user-${Date.now()}`, // Generate unique ID
+      id: userId || `user-${Date.now()}`, // Use Supabase ID if available
       name: userData.name || 'User',
       email: userData.email || 'user@example.com',
       goal: userData.goal || 'maintain',
@@ -90,7 +94,8 @@ export default function OnboardingFlow() {
       onboardingCompleted: true,
       preferences: userData.preferences,
       createdAt: new Date().toISOString(),
-      lastLoginAt: new Date().toISOString()
+      lastLoginAt: new Date().toISOString(),
+      avatar: userData.avatar
     };
 
     dispatch({ type: 'SET_USER', payload: user });

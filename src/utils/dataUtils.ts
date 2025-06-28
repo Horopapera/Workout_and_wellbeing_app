@@ -33,7 +33,7 @@ import {
 
 /**
  * Transform app model to database model
- * These functions will be used in Phase 5 when migrating to Supabase
+ * These functions are used to convert between app models and database models
  */
 export const transformers = {
   // User transformers
@@ -155,8 +155,113 @@ export const transformers = {
     };
   },
 
-  // More transformers will be added for all data types
-  // This is a placeholder for Phase 5 implementation
+  // Food entry transformers
+  foodEntryFromDatabase(dbEntry: DatabaseFoodEntry, food: Food): FoodEntry {
+    return {
+      id: dbEntry.id,
+      foodId: dbEntry.food_id,
+      food,
+      amount: dbEntry.amount,
+      calories: dbEntry.calories,
+      protein: dbEntry.protein,
+      carbs: dbEntry.carbs,
+      fat: dbEntry.fat,
+      mealType: dbEntry.meal_type,
+      date: dbEntry.date,
+      createdAt: dbEntry.created_at
+    };
+  },
+  
+  // Planned food entry transformers
+  plannedFoodEntryToDatabase(entry: PlannedFoodEntry, userId: string): DatabasePlannedFoodEntry {
+    return {
+      id: entry.id,
+      user_id: userId,
+      food_id: entry.foodId,
+      amount: entry.amount,
+      calories: entry.calories,
+      protein: entry.protein,
+      carbs: entry.carbs,
+      fat: entry.fat,
+      meal_type: entry.mealType,
+      date: entry.date,
+      created_at: entry.createdAt || new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  },
+  
+  plannedFoodEntryFromDatabase(dbEntry: DatabasePlannedFoodEntry, food: Food): PlannedFoodEntry {
+    return {
+      id: dbEntry.id,
+      foodId: dbEntry.food_id,
+      food,
+      amount: dbEntry.amount,
+      calories: dbEntry.calories,
+      protein: dbEntry.protein,
+      carbs: dbEntry.carbs,
+      fat: dbEntry.fat,
+      mealType: dbEntry.meal_type,
+      date: dbEntry.date,
+      createdAt: dbEntry.created_at
+    };
+  },
+  
+  // Notification transformers
+  notificationToDatabase(notification: Notification, userId: string): DatabaseNotification {
+    return {
+      id: notification.id,
+      user_id: userId,
+      type: notification.type,
+      title: notification.title,
+      message: notification.message,
+      read: notification.read,
+      action_url: notification.actionUrl,
+      created_at: notification.timestamp || new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  },
+  
+  notificationFromDatabase(dbNotification: DatabaseNotification): Notification {
+    return {
+      id: dbNotification.id,
+      type: dbNotification.type,
+      title: dbNotification.title,
+      message: dbNotification.message,
+      read: dbNotification.read,
+      actionUrl: dbNotification.action_url,
+      timestamp: dbNotification.created_at
+    };
+  },
+  
+  // Quick add entry transformers
+  quickAddEntryToDatabase(entry: QuickAddEntry, userId: string): DatabaseQuickAddEntry {
+    return {
+      id: entry.id,
+      user_id: userId,
+      name: entry.name,
+      calories: entry.calories,
+      protein: entry.protein,
+      carbs: entry.carbs,
+      fat: entry.fat,
+      meal_type: entry.mealType,
+      date: entry.date,
+      created_at: entry.createdAt || new Date().toISOString()
+    };
+  },
+  
+  quickAddEntryFromDatabase(dbEntry: DatabaseQuickAddEntry): QuickAddEntry {
+    return {
+      id: dbEntry.id,
+      name: dbEntry.name,
+      calories: dbEntry.calories,
+      protein: dbEntry.protein,
+      carbs: dbEntry.carbs,
+      fat: dbEntry.fat,
+      mealType: dbEntry.meal_type,
+      date: dbEntry.date,
+      createdAt: dbEntry.created_at
+    };
+  }
 };
 
 /**
@@ -234,30 +339,206 @@ export const validators = {
     return true;
   },
 
-  // More validators will be added for all data types
-  // This is a placeholder for Phase 5 implementation
+  // Planned food entry validation
+  validatePlannedFoodEntry(entry: PlannedFoodEntry): boolean {
+    if (!entry.id || !entry.foodId) {
+      return false;
+    }
+    
+    if (!entry.amount || entry.amount <= 0) {
+      return false;
+    }
+    
+    if (!entry.mealType || 
+        !['breakfast', 'lunch', 'dinner', 'snack'].includes(entry.mealType)) {
+      return false;
+    }
+    
+    if (!entry.date) {
+      return false;
+    }
+    
+    return true;
+  },
+  
+  // Workout validation
+  validateWorkout(workout: Workout): boolean {
+    if (!workout.id || !workout.name) {
+      return false;
+    }
+    
+    if (!workout.exercises || workout.exercises.length === 0) {
+      return false;
+    }
+    
+    return true;
+  },
+  
+  // Recipe validation
+  validateRecipe(recipe: Recipe): boolean {
+    if (!recipe.id || !recipe.name) {
+      return false;
+    }
+    
+    if (!recipe.ingredients || recipe.ingredients.length === 0) {
+      return false;
+    }
+    
+    if (!recipe.servings || recipe.servings <= 0) {
+      return false;
+    }
+    
+    return true;
+  },
+  
+  // Notification validation
+  validateNotification(notification: Notification): boolean {
+    if (!notification.id || !notification.title || !notification.message) {
+      return false;
+    }
+    
+    if (!notification.type || 
+        !['workout', 'meal', 'water', 'reminder', 'achievement'].includes(notification.type)) {
+      return false;
+    }
+    
+    return true;
+  },
+  
+  // Quick add entry validation
+  validateQuickAddEntry(entry: QuickAddEntry): boolean {
+    if (!entry.id || !entry.name) {
+      return false;
+    }
+    
+    if (entry.calories < 0 || entry.protein < 0 || entry.carbs < 0 || entry.fat < 0) {
+      return false;
+    }
+    
+    if (!entry.mealType || 
+        !['breakfast', 'lunch', 'dinner', 'snack'].includes(entry.mealType)) {
+      return false;
+    }
+    
+    if (!entry.date) {
+      return false;
+    }
+    
+    return true;
+  }
 };
 
 /**
  * Data migration utilities
- * These will be used in Phase 5 to migrate data from localStorage to Supabase
+ * These utilities help migrate data from localStorage to Supabase
  */
 export const migrationUtils = {
-  // Generate SQL for creating tables
-  generateCreateTableSQL(): string[] {
-    // This will be implemented in Phase 5
-    return [];
-  },
-
-  // Generate SQL for creating RLS policies
-  generateRLSPoliciesSQL(): string[] {
-    // This will be implemented in Phase 5
-    return [];
-  },
-
-  // Generate SQL for creating indexes
-  generateIndexesSQL(): string[] {
-    // This will be implemented in Phase 5
-    return [];
+  /**
+   * Migrates user data from localStorage to Supabase
+   * @param userId The user ID to migrate
+   * @param localData The local data to migrate
+   */
+  async migrateLocalDataToSupabase(userId: string, localData: any): Promise<boolean> {
+    try {
+      const { 
+        user, 
+        foodEntries, 
+        plannedFoodEntries, 
+        mealTemplates, 
+        workouts, 
+        recipes, 
+        wellnessEntries, 
+        customFoods, 
+        notifications, 
+        quickAddEntries 
+      } = localData;
+      
+      // Save user profile
+      await dataService.saveUser(user);
+      
+      // Save all data in parallel batches to avoid overwhelming the API
+      // Custom foods first (as other entities depend on them)
+      if (customFoods && customFoods.length > 0) {
+        await Promise.all(customFoods.map(food => 
+          dataService.saveCustomFood(userId, food)
+        ));
+      }
+      
+      // Food entries
+      if (foodEntries && foodEntries.length > 0) {
+        const batches = [];
+        for (let i = 0; i < foodEntries.length; i += 10) {
+          const batch = foodEntries.slice(i, i + 10);
+          batches.push(Promise.all(batch.map(entry => 
+            dataService.saveFoodEntry(userId, entry)
+          )));
+        }
+        await Promise.all(batches);
+      }
+      
+      // Planned food entries
+      if (plannedFoodEntries && plannedFoodEntries.length > 0) {
+        const batches = [];
+        for (let i = 0; i < plannedFoodEntries.length; i += 10) {
+          const batch = plannedFoodEntries.slice(i, i + 10);
+          batches.push(Promise.all(batch.map(entry => 
+            dataService.savePlannedFoodEntry(userId, entry)
+          )));
+        }
+        await Promise.all(batches);
+      }
+      
+      // Meal templates
+      if (mealTemplates && mealTemplates.length > 0) {
+        await Promise.all(mealTemplates.map(template => 
+          dataService.saveMealTemplate(userId, template)
+        ));
+      }
+      
+      // Workouts
+      if (workouts && workouts.length > 0) {
+        await Promise.all(workouts.map(workout => 
+          dataService.saveWorkout(userId, workout)
+        ));
+      }
+      
+      // Recipes
+      if (recipes && recipes.length > 0) {
+        await Promise.all(recipes.map(recipe => 
+          dataService.saveRecipe(userId, recipe)
+        ));
+      }
+      
+      // Wellness entries
+      if (wellnessEntries && wellnessEntries.length > 0) {
+        await Promise.all(wellnessEntries.map(entry => 
+          dataService.saveWellnessEntry(userId, entry)
+        ));
+      }
+      
+      // Notifications
+      if (notifications && notifications.length > 0) {
+        const batches = [];
+        for (let i = 0; i < notifications.length; i += 10) {
+          const batch = notifications.slice(i, i + 10);
+          batches.push(Promise.all(batch.map(notification => 
+            dataService.saveNotification(userId, notification)
+          )));
+        }
+        await Promise.all(batches);
+      }
+      
+      // Quick add entries
+      if (quickAddEntries && quickAddEntries.length > 0) {
+        await Promise.all(quickAddEntries.map(entry => 
+          dataService.saveQuickAddEntry(userId, entry)
+        ));
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Failed to migrate local data to Supabase:', error);
+      return false;
+    }
   }
 };

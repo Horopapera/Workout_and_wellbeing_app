@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import AuthFlow from './components/Auth/AuthFlow';
+import { supabase } from './services/supabaseClient';
 import OnboardingFlow from './components/Onboarding/OnboardingFlow';
 import Dashboard from './components/Dashboard/Dashboard';
 import { useEffect } from 'react';
@@ -15,6 +16,7 @@ function AppContent() {
   const { state } = useApp();
   const { dispatch } = useApp();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [showWorkoutSession, setShowWorkoutSession] = useState(false);
   const [activeWorkout, setActiveWorkout] = useState<Workout | null>(null);
@@ -30,6 +32,42 @@ function AppContent() {
       window.removeEventListener('navigate-to-profile', handleNavigateToProfile);
     };
   }, []);
+
+  // Check authentication status on mount
+  React.useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setIsAuthenticated(!!session);
+      } catch (error) {
+        console.error('Error checking auth status:', error);
+      } finally {
+        setIsAuthLoading(false);
+      }
+    };
+
+    checkAuth();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Show auth flow if user is not authenticated
   if (!isAuthenticated) {

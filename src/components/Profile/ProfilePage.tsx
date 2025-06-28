@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { User, Edit3, LogOut, Camera, Save, X, Target, Activity, Calendar, Award } from 'lucide-react';
+import { User, Edit3, LogOut, Camera, Save, X, Target, Activity, Calendar, Award, Download, Upload } from 'lucide-react';
 import { User as UserType } from '../../types';
 import SettingsModal from './SettingsModal';
+import { supabase } from '../../services/supabaseClient';
+import { migrationUtils } from '../../utils/dataUtils';
+import { dataService } from '../../services/dataService';
 
 export default function ProfilePage() {
   const { state, dispatch } = useApp();
   const { user, workouts, foodEntries } = state;
   const [showSettings, setShowSettings] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const [editForm, setEditForm] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -40,8 +45,81 @@ export default function ProfilePage() {
   };
 
   const handleLogout = () => {
-    if (confirm('Are you sure you want to log out? You can log back in anytime.')) {
-      dispatch({ type: 'LOGOUT_USER' });
+    if (confirm('Are you sure you want to log out? Your data will be saved.')) {
+      // Sign out from Supabase
+      supabase.auth.signOut().then(() => {
+        // Clear app state
+        dispatch({ type: 'LOGOUT_USER' });
+      });
+    }
+  };
+
+  const handleExportData = async () => {
+    try {
+      setIsExporting(true);
+      
+      // Export all user data
+      const exportData = await dataService.exportUserData(user.id);
+      
+      // Convert to JSON and create download link
+      const dataStr = JSON.stringify(exportData, null, 2);
+      const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
+      
+      // Create and trigger download
+      const exportFileDefaultName = `fitness-data-${new Date().toISOString().split('T')[0]}.json`;
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+      
+      setIsExporting(false);
+    } catch (error) {
+      console.error('Failed to export data:', error);
+      alert('Failed to export data. Please try again.');
+      setIsExporting(false);
+    }
+  };
+
+  const handleImportData = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      
+      setIsImporting(true);
+      
+      // Read the file
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const data = JSON.parse(e.target?.result as string);
+          
+          // Validate the data
+          if (!data.user || !data.user.id) {
+            throw new Error('Invalid data format');
+          }
+          
+          // Migrate the data to Supabase
+          const success = await migrationUtils.migrateLocalDataToSupabase(user.id, data);
+          
+          if (success) {
+            alert('Data imported successfully! Please refresh the page to see your imported data.');
+            window.location.reload();
+          } else {
+            throw new Error('Failed to import data');
+          }
+        } catch (error) {
+          console.error('Failed to import data:', error);
+          alert('Failed to import data. Please check the file format and try again.');
+        } finally {
+          setIsImporting(false);
+        }
+      };
+      
+      reader.readAsText(file);
+    } catch (error) {
+      console.error('Failed to import data:', error);
+      alert('Failed to import data. Please try again.');
+      setIsImporting(false);
     }
   };
 
@@ -226,6 +304,56 @@ export default function ProfilePage() {
           </div>
         </div>
 
+        {/* Data Management */}
+        <div className="bg-white rounded-xl shadow-sm p-5">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Data Management</h3>
+          
+          <div className="space-y-3">
+            <button
+              onClick={handleExportData}
+              disabled={isExporting}
+              className="w-full flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <Download className="w-5 h-5 text-blue-600" />
+                <div className="text-left">
+                  <span className="font-medium text-gray-800">Export Data</span>
+                  <p className="text-sm text-gray-600">Download all your data as JSON</p>
+                </div>
+              </div>
+              {isExporting && (
+                <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              )}
+            </button>
+            
+            <div className="relative">
+              <button
+                onClick={() => document.getElementById('import-file')?.click()}
+                disabled={isImporting}
+                className="w-full flex items-center justify-between p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <Upload className="w-5 h-5 text-purple-600" />
+                  <div className="text-left">
+                    <span className="font-medium text-gray-800">Import Data</span>
+                    <p className="text-sm text-gray-600">Upload previously exported data</p>
+                  </div>
+                </div>
+                {isImporting && (
+                  <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                )}
+              </button>
+              <input
+                id="import-file"
+                type="file"
+                accept=".json"
+                onChange={handleImportData}
+                className="hidden"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Action Buttons */}
         <div className="space-y-3">
           {isEditing && (
@@ -247,10 +375,10 @@ export default function ProfilePage() {
           
           <button
             onClick={handleLogout}
-            className="w-full bg-orange-50 text-orange-600 py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-orange-100 transition-colors"
+            className="w-full bg-red-50 text-red-600 py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-red-100 transition-colors"
           >
             <LogOut className="w-4 h-4" />
-            Switch User / Logout
+            Sign Out
           </button>
         </div>
       </div>

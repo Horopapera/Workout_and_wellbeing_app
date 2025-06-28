@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User, Mail, Lock, Eye, EyeOff, LogIn, UserPlus, Users } from 'lucide-react';
-import { validateCredentials, saveCurrentSession, getAllUserAccountsForDev } from '../../utils/authStorage';
+import { supabase } from '../../services/supabaseClient';
 
 interface LoginScreenProps {
   onLogin: (userId: string) => void;
@@ -15,7 +15,6 @@ export default function LoginScreen({ onLogin, onSwitchToSignup }: LoginScreenPr
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [showDevUsers, setShowDevUsers] = useState(false);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -41,32 +40,27 @@ export default function LoginScreen({ onLogin, onSwitchToSignup }: LoginScreenPr
     setIsLoading(true);
     setErrors({});
 
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-
     try {
-      const user = validateCredentials(formData.email, formData.password);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password
+      });
       
-      if (user) {
-        // Update last login time
-        const updatedUser = {
-          ...user,
-          lastLoginAt: new Date().toISOString()
-        };
-        
-        // Save session
-        saveCurrentSession({
-          userId: user.id,
-          email: user.email,
-          loginTime: new Date().toISOString()
-        });
-
-        onLogin(user.id);
-      } else {
-        setErrors({ general: 'Invalid email or password' });
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          setErrors({ general: 'Invalid email or password' });
+        } else {
+          setErrors({ general: error.message });
+        }
+        return;
+      }
+      
+      if (data.user) {
+        onLogin(data.user.id);
       }
     } catch (error) {
-      setErrors({ general: 'Login failed. Please try again.' });
+      console.error('Login error:', error);
+      setErrors({ general: 'An unexpected error occurred. Please try again.' });
     } finally {
       setIsLoading(false);
     }
@@ -78,13 +72,6 @@ export default function LoginScreen({ onLogin, onSwitchToSignup }: LoginScreenPr
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
-
-  const handleDevUserLogin = (email: string) => {
-    setFormData({ email, password: 'demo123' });
-    setShowDevUsers(false);
-  };
-
-  const devUsers = getAllUserAccountsForDev();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 flex items-center justify-center p-4">
@@ -212,39 +199,6 @@ export default function LoginScreen({ onLogin, onSwitchToSignup }: LoginScreenPr
           </div>
         </div>
 
-        {/* Developer Tools */}
-        {devUsers.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-xl p-4">
-            <button
-              onClick={() => setShowDevUsers(!showDevUsers)}
-              className="w-full flex items-center justify-center gap-2 text-gray-600 hover:text-gray-800 font-medium"
-            >
-              <Users className="w-4 h-4" />
-              Developer: Quick Login ({devUsers.length} users)
-            </button>
-            
-            {showDevUsers && (
-              <div className="mt-4 space-y-2">
-                <p className="text-xs text-gray-500 mb-3">
-                  Click any user to auto-fill login (password: demo123)
-                </p>
-                {devUsers.map(user => (
-                  <button
-                    key={user.id}
-                    onClick={() => handleDevUserLogin(user.email)}
-                    className="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                    disabled={isLoading}
-                  >
-                    <div className="font-medium text-gray-800">{user.email}</div>
-                    <div className="text-sm text-gray-600">
-                      Last login: {new Date(user.lastLogin).toLocaleDateString()}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );

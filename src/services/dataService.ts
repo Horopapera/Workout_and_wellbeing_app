@@ -14,6 +14,8 @@ import {
   Notification 
 } from '../types';
 import { DatabaseTables } from '../types/database';
+import { SupabaseAdapter } from './supabaseService';
+import { supabase } from './supabaseClient';
 
 // Storage interface - can be implemented by localStorage, Supabase, or any other backend
 interface DataStorage {
@@ -92,8 +94,19 @@ class DataService {
     
     // Initialize storage based on configuration
     if (config.storage === 'supabase') {
-      // Will be implemented in Phase 5
-      throw new Error('Supabase storage not yet implemented. Use localStorage for now.');
+      // Check if we have a valid Supabase session
+      const session = supabase.auth.getSession();
+      if (!session) {
+        throw new Error('No Supabase session found. Please authenticate first.');
+      }
+      
+      // Get the user ID from the session
+      const userId = supabase.auth.getUser().then(({ data }) => data.user?.id);
+      if (!userId) {
+        throw new Error('No user ID found in Supabase session.');
+      }
+      
+      this.storage = new SupabaseAdapter();
     } else {
       this.storage = new LocalStorageAdapter();
     }
@@ -844,7 +857,7 @@ class LocalStorageAdapter implements DataStorage {
 
 // Export singleton instance
 export const dataService = new DataService({
-  storage: 'localStorage' // Will be configurable in Phase 5
+  storage: import.meta.env.VITE_SUPABASE_URL ? 'supabase' : 'localStorage'
 });
 
 export { DataService, DataServiceError };

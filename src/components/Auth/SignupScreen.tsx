@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User, Mail, Lock, Eye, EyeOff, UserPlus, ArrowLeft } from 'lucide-react';
-import { emailExists, saveUserAccount, saveCurrentSession } from '../../utils/authStorage';
+import { supabase } from '../../services/supabaseClient';
 import { User as UserType } from '../../types';
 
 interface SignupScreenProps {
@@ -26,15 +26,13 @@ export default function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreen
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'Name must be at least 2 characters';
+      newErrors.name = 'Name must be at least 2 characters long';
     }
 
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email';
-    } else if (emailExists(formData.email)) {
-      newErrors.email = 'An account with this email already exists';
     }
 
     if (!formData.password) {
@@ -60,64 +58,38 @@ export default function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreen
     setIsLoading(true);
     setErrors({});
 
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
     try {
-      const userId = `user-${Date.now()}`;
-      const now = new Date().toISOString();
-
-      // Create basic user profile (will be completed in onboarding)
-      const userProfile: UserType = {
-        id: userId,
-        name: formData.name.trim(),
+      // Sign up with Supabase
+      const { data, error } = await supabase.auth.signUp({
         email: formData.email.toLowerCase().trim(),
-        goal: 'maintain',
-        currentWeight: 70,
-        height: 170,
-        age: 25,
-        gender: 'other',
-        activityLevel: 'moderate',
-        dietaryPreferences: [],
-        workoutStyle: [],
-        dailyCalories: 2000,
-        macroTargets: { protein: 125, carbs: 250, fat: 67 },
-        onboardingCompleted: false, // Will trigger onboarding flow
-        preferences: {
-          notifications: {
-            workouts: true,
-            meals: true,
-            water: true,
-            reminders: true
-          },
-          units: 'metric',
-          theme: 'light'
-        },
-        createdAt: now,
-        lastLoginAt: now
-      };
-
-      // Save user account
-      const userAccount = {
-        id: userId,
-        email: formData.email.toLowerCase().trim(),
-        password: formData.password, // In real app, this would be hashed
-        profile: userProfile,
-        createdAt: now,
-        lastLoginAt: now
-      };
-
-      saveUserAccount(userAccount);
-
-      // Save session
-      saveCurrentSession({
-        userId,
-        email: formData.email.toLowerCase().trim(),
-        loginTime: now
+        password: formData.password,
+        options: {
+          data: {
+            name: formData.name.trim()
+          }
+        }
       });
+      
+      if (error) {
+        if (error.message.includes('already registered')) {
+          setErrors({ email: 'An account with this email already exists' });
+        } else {
+          setErrors({ general: error.message });
+        }
+        return;
+      }
+      
+      if (data.user) {
+        // User created successfully
+        // The onboarding flow will handle creating the user profile
+        onSignup(data.user.id);
+      } else {
+        // This should not happen, but just in case
+        setErrors({ general: 'Failed to create account. Please try again.' });
+      }
 
-      onSignup(userId);
     } catch (error) {
+      console.error('Signup error:', error);
       setErrors({ general: 'Signup failed. Please try again.' });
     } finally {
       setIsLoading(false);
@@ -148,7 +120,7 @@ export default function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreen
           <form onSubmit={handleSubmit} className="space-y-4">
             {errors.general && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-red-700 text-sm">{errors.general}</p>
+                <p className="text-red-700 text-sm font-medium">{errors.general}</p>
               </div>
             )}
 
@@ -227,7 +199,7 @@ export default function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreen
               {errors.password && (
                 <p className="text-red-600 text-sm mt-1">{errors.password}</p>
               )}
-              <p className="text-xs text-gray-500 mt-1">Must be at least 6 characters</p>
+              <p className="text-xs text-gray-500 mt-1">Must be at least 6 characters long</p>
             </div>
 
             {/* Confirm Password */}
@@ -278,7 +250,7 @@ export default function SignupScreen({ onSignup, onSwitchToLogin }: SignupScreen
                 </>
               ) : (
                 <>
-                  <UserPlus className="w-4 h-4" />
+                  <UserPlus className="w-5 h-5" />
                   Create Account
                 </>
               )}
