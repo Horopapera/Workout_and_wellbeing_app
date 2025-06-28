@@ -1,0 +1,114 @@
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  goal: 'lose' | 'gain' | 'maintain';
+  targetWeight?: number;
+  currentWeight: number;
+  height: number;
+  age: number;
+  gender: 'male' | 'female' | 'other';
+  activityLevel: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
+  dietaryPreferences: string[];
+  workoutStyle: string[];
+  dailyCalories: number;
+  macroTargets: {
+    protein: number;
+    carbs: number;
+    fat: number;
+  };
+  onboardingCompleted: boolean;
+}
+
+export interface Food {
+  id: string;
+  name: string;
+  brand?: string;
+  barcode?: string;
+  caloriesPer100g: number;
+  proteinPer100g: number;
+  carbsPer100g: number;
+  fatPer100g: number;
+  category: string;
+  isCustom?: boolean;
+}
+
+export interface FoodEntry {
+  id: string;
+  foodId: string;
+  food: Food;
+  amount: number; // in grams
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  date: string;
+}
+
+export interface Exercise {
+  id: string;
+  name: string;
+  category: string;
+  muscleGroups: string[];
+  equipment?: string;
+  instructions?: string;
+}
+
+export interface WorkoutSet {
+  id: string;
+  reps: number;
+  weight?: number;
+  duration?: number; // in seconds
+  restTime?: number; // in seconds
+  completed: boolean;
+}
+
+export interface WorkoutExercise {
+  id: string;
+  exerciseId: string;
+  exercise: Exercise;
+  sets: WorkoutSet[];
+  notes?: string;
+}
+
+export interface Workout {
+  id: string;
+  name: string;
+  exercises: WorkoutExercise[];
+  date: string;
+  duration?: number; // in minutes
+  completed: boolean;
+  notes?: string;
+}
+
+export interface Recipe {
+  id: string;
+  name: string;
+  ingredients: {
+    foodId: string;
+    food: Food;
+    amount: number;
+  }[];
+  servings: number;
+  instructions?: string;
+  totalCalories: number;
+  totalProtein: number;
+  totalCarbs: number;
+  totalFat: number;
+  caloriesPerServing: number;
+  proteinPerServing: number;
+  carbsPerServing: number;
+  fatPerServing: number;
+}
+
+export interface WellnessEntry {
+  id: string;
+  date: string;
+  waterIntake: number; // in ml
+  sleepHours?: number;
+  bedtime?: string;
+  wakeTime?: string;
+  sleepQuality?: number; // 1-5 scale
+  notes?: string;
+}
