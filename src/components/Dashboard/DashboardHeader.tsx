@@ -29,11 +29,11 @@ export default function DashboardHeader({ user, onNotificationClick, onProfileCl
               <UserCircle className="w-6 h-6" />
             )}
           </button>
-          </div>
           <div>
             <h1 className="text-xl font-bold">Hello, {user.name}!</h1>
             <p className="text-white/80 text-sm">{today}</p>
           </div>
+        </div>
         </div>
         
         <div className="flex items-center gap-2">
