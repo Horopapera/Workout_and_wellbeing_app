@@ -28,7 +28,7 @@ export class SupabaseAdapter implements DataStorage {
         .from('users')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       if (!data) return null;
