@@ -186,7 +186,7 @@ export default function WorkoutSession({ workout, onClose, onComplete }: Workout
       </div>
 
       {/* Main Content - Scrollable */}
-      <div className="flex-1 overflow-y-auto bg-gray-50">
+      <div className="flex-1 overflow-y-auto bg-gray-50 pb-32">
         <div className="px-4 py-6 space-y-6">
           {/* Exercise Info */}
           <div className="text-center">
@@ -317,13 +317,11 @@ export default function WorkoutSession({ workout, onClose, onComplete }: Workout
             </button>
           </div>
 
-          {/* Extra spacing for bottom actions */}
-          <div className="h-20"></div>
         </div>
       </div>
 
       {/* Bottom Actions - Fixed */}
-      <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0">
+      <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0 pb-24">
         <div className="flex gap-3">
           <button
             onClick={handleSkipSet}
