@@ -46,34 +46,57 @@ export default function WorkoutScheduler({ workout, onClose }: WorkoutSchedulerP
     const endDate = new Date(start);
     endDate.setMonth(endDate.getMonth() + 3); // Schedule for 3 months
 
-    let currentDate = new Date(start);
-
-    while (currentDate <= endDate) {
-      if (selectedDays.includes(currentDate.getDay())) {
-        const scheduledWorkout: Workout = {
-          ...workout,
-          id: `${workout.id}-${currentDate.toISOString().split('T')[0]}`,
-          date: currentDate.toISOString().split('T')[0],
-          completed: false,
-          exercises: workout.exercises.map(ex => ({
-            ...ex,
-            id: `${ex.id}-${Date.now()}-${Math.random()}`,
-            sets: ex.sets.map(set => ({ ...set, completed: false }))
-          }))
-        };
-        scheduledWorkouts.push(scheduledWorkout);
+    // Generate dates based on repeat type
+    const generateDates = () => {
+      const dates: Date[] = [];
+      let currentWeek = new Date(start);
+      
+      // Find the start of the week containing our start date
+      const dayOfWeek = currentWeek.getDay();
+      currentWeek.setDate(currentWeek.getDate() - dayOfWeek);
+      
+      while (currentWeek <= endDate) {
+        // Add all selected days in this week
+        selectedDays.forEach(dayId => {
+          const workoutDate = new Date(currentWeek);
+          workoutDate.setDate(currentWeek.getDate() + dayId);
+          
+          // Only add if it's after our start date and before end date
+          if (workoutDate >= start && workoutDate <= endDate) {
+            dates.push(new Date(workoutDate));
+          }
+        });
+        
+        // Move to next period
+        if (repeatType === 'weekly') {
+          currentWeek.setDate(currentWeek.getDate() + 7);
+        } else if (repeatType === 'fortnightly') {
+          currentWeek.setDate(currentWeek.getDate() + 14);
+        } else if (repeatType === 'monthly') {
+          currentWeek.setMonth(currentWeek.getMonth() + 1);
+        }
       }
+      
+      return dates;
+    };
 
-      // Move to next day
-      currentDate.setDate(currentDate.getDate() + 1);
+    const dates = generateDates();
+    
+    dates.forEach(date => {
+      const scheduledWorkout: Workout = {
+        ...workout,
+        id: `${workout.id}-${date.toISOString().split('T')[0]}-${Date.now()}`,
+        date: date.toISOString().split('T')[0],
+        completed: false,
+        exercises: workout.exercises.map(ex => ({
+          ...ex,
+          id: `${ex.id}-${Date.now()}-${Math.random()}`,
+          sets: ex.sets.map(set => ({ ...set, completed: false }))
+        }))
+      };
+      scheduledWorkouts.push(scheduledWorkout);
+    });
 
-      // Skip ahead based on repeat type
-      if (repeatType === 'fortnightly' && currentDate.getDay() === start.getDay()) {
-        currentDate.setDate(currentDate.getDate() + 7); // Skip one week
-      } else if (repeatType === 'monthly' && currentDate.getDate() === start.getDate()) {
-        currentDate.setMonth(currentDate.getMonth() + 1);
-        currentDate.setDate(start.getDate());
-      }
     }
 
     return scheduledWorkouts;

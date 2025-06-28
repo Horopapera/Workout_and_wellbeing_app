@@ -36,6 +36,11 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'ADD_FOOD_ENTRY':
       return { ...state, foodEntries: [...state.foodEntries, action.payload] };
     case 'ADD_WORKOUT':
+      // Check if workout with same ID already exists (prevent duplicates)
+      const existingWorkout = state.workouts.find(w => w.id === action.payload.id);
+      if (existingWorkout) {
+        return state;
+      }
       return { ...state, workouts: [...state.workouts, action.payload] };
     case 'UPDATE_WORKOUT':
       return {

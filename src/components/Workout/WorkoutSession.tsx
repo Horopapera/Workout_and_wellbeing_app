@@ -204,11 +204,46 @@ export default function WorkoutSession({ workout, onClose, onComplete }: Workout
               key={reps}
               onClick={() => handleBankReps(reps)}
               disabled={bankedReps >= targetReps}
-              className="bg-white border-2 border-emerald-500 text-emerald-600 py-3 px-4 rounded-xl font-semibold hover:bg-emerald-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-white border-2 border-emerald-500 text-emerald-600 py-4 px-4 rounded-xl font-bold text-lg hover:bg-emerald-50 active:bg-emerald-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
             >
               +{reps}
             </button>
           ))}
+        </div>
+
+        {/* Custom Rep Input */}
+        <div className="mb-6 w-full max-w-sm">
+          <div className="flex gap-2">
+            <input
+              type="number"
+              min="1"
+              max={targetReps - bankedReps}
+              placeholder="Custom"
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-center font-medium"
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  const value = parseInt((e.target as HTMLInputElement).value);
+                  if (value > 0) {
+                    handleBankReps(value);
+                    (e.target as HTMLInputElement).value = '';
+                  }
+                }
+              }}
+            />
+            <button
+              onClick={(e) => {
+                const input = (e.currentTarget.previousElementSibling as HTMLInputElement);
+                const value = parseInt(input.value);
+                if (value > 0) {
+                  handleBankReps(value);
+                  input.value = '';
+                }
+              }}
+              className="bg-emerald-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-emerald-600 transition-colors"
+            >
+              Add
+            </button>
+          </div>
         </div>
 
         {/* Reset Button */}
