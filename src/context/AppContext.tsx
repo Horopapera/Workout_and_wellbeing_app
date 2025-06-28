@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import { User, FoodEntry, PlannedFoodEntry, MealTemplate, Workout, Recipe, WellnessEntry, Food } from '../types';
+import { User, FoodEntry, PlannedFoodEntry, MealTemplate, Workout, Recipe, WellnessEntry, Food, QuickAddEntry } from '../types';
 
 interface AppState {
   user: User | null;
@@ -11,6 +11,7 @@ interface AppState {
   wellnessEntries: WellnessEntry[];
   currentDate: string;
   customFoods: Food[];
+  quickAddEntries: QuickAddEntry[];
 }
 
 type AppAction =
@@ -31,10 +32,13 @@ type AppAction =
   | { type: 'UPDATE_CUSTOM_FOOD'; payload: Food }
   | { type: 'DELETE_CUSTOM_FOOD'; payload: string }
   | { type: 'UPDATE_FOOD_USAGE'; payload: string } // food ID
+  | { type: 'ADD_RECIPE'; payload: Recipe }
+  | { type: 'UPDATE_RECIPE'; payload: Recipe }
+  | { type: 'DELETE_RECIPE'; payload: string }
+  | { type: 'ADD_QUICK_ADD_ENTRY'; payload: QuickAddEntry }
   | { type: 'ADD_WORKOUT'; payload: Workout }
   | { type: 'UPDATE_WORKOUT'; payload: Workout }
   | { type: 'DELETE_WORKOUT'; payload: string }
-  | { type: 'ADD_RECIPE'; payload: Recipe }
   | { type: 'ADD_WELLNESS_ENTRY'; payload: WellnessEntry }
   | { type: 'SET_CURRENT_DATE'; payload: string };
 
@@ -47,7 +51,8 @@ const initialState: AppState = {
   recipes: [],
   wellnessEntries: [],
   currentDate: new Date().toISOString().split('T')[0],
-  customFoods: []
+  customFoods: [],
+  quickAddEntries: []
 };
 
 function appReducer(state: AppState, action: AppAction): AppState {
@@ -142,6 +147,22 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const updatedTemplates = state.mealTemplates.map(t => 
         t.id === templateId ? { ...t, lastUsed: new Date().toISOString() } : t
       );
+    case 'ADD_RECIPE':
+      return { ...state, recipes: [...state.recipes, action.payload] };
+    case 'UPDATE_RECIPE':
+      return {
+        ...state,
+        recipes: state.recipes.map(recipe => 
+          recipe.id === action.payload.id ? action.payload : recipe
+        )
+      };
+    case 'DELETE_RECIPE':
+      return {
+        ...state,
+        recipes: state.recipes.filter(recipe => recipe.id !== action.payload)
+      };
+    case 'ADD_QUICK_ADD_ENTRY':
+      return { ...state, quickAddEntries: [...state.quickAddEntries, action.payload] };
       
       return {
         ...state,
@@ -193,8 +214,6 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         workouts: state.workouts.filter(w => w.id !== action.payload)
       };
-    case 'ADD_RECIPE':
-      return { ...state, recipes: [...state.recipes, action.payload] };
     case 'ADD_WELLNESS_ENTRY':
       return { ...state, wellnessEntries: [...state.wellnessEntries, action.payload] };
     case 'SET_CURRENT_DATE':

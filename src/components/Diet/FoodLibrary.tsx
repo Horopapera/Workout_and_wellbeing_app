@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { X, Search, Plus, Edit3, Trash2, Library } from 'lucide-react';
+import { X, Search, Plus, Edit3, Trash2, Library, ChefHat, Camera } from 'lucide-react';
 import { Food } from '../../types';
 import { mockFoods } from '../../data/mockData';
+import RecipeBuilderModal from './RecipeBuilderModal';
 
 interface FoodLibraryProps {
   onClose: () => void;
@@ -10,11 +11,13 @@ interface FoodLibraryProps {
 
 export default function FoodLibrary({ onClose }: FoodLibraryProps) {
   const { state, dispatch } = useApp();
-  const { customFoods } = state;
+  const { customFoods, recipes } = state;
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddFood, setShowAddFood] = useState(false);
   const [editingFood, setEditingFood] = useState<Food | null>(null);
-  const [activeTab, setActiveTab] = useState<'all' | 'custom' | 'recent'>('all');
+  const [editingRecipe, setEditingRecipe] = useState<any>(null);
+  const [showRecipeBuilder, setShowRecipeBuilder] = useState(false);
+  const [activeTab, setActiveTab] = useState<'all' | 'custom' | 'recipes' | 'recent'>('all');
   const [newFood, setNewFood] = useState({
     name: '',
     category: '',
@@ -27,23 +30,39 @@ export default function FoodLibrary({ onClose }: FoodLibraryProps) {
   // Combine all foods
   const allFoods = [...mockFoods, ...customFoods];
 
+  // Convert recipes to food-like objects for display
+  const recipeAsFoods = recipes.map(recipe => ({
+    id: `recipe-${recipe.id}`,
+    name: `${recipe.name} (Recipe)`,
+    caloriesPer100g: recipe.caloriesPerServing,
+    proteinPer100g: recipe.proteinPerServing,
+    carbsPer100g: recipe.carbsPerServing,
+    fatPer100g: recipe.fatPerServing,
+    category: 'Recipes',
+    isRecipe: true,
+    recipe: recipe
+  }));
+
   // Filter foods based on active tab and search
   const getFilteredFoods = () => {
-    let foods = allFoods;
+    let foods: any[] = allFoods;
 
     // Filter by tab
     switch (activeTab) {
       case 'custom':
         foods = customFoods;
         break;
+      case 'recipes':
+        foods = recipeAsFoods;
+        break;
       case 'recent':
-        foods = allFoods
+        foods = [...allFoods, ...recipeAsFoods]
           .filter(food => food.lastUsed)
           .sort((a, b) => new Date(b.lastUsed!).getTime() - new Date(a.lastUsed!).getTime())
           .slice(0, 20);
         break;
       default:
-        foods = allFoods;
+        foods = [...allFoods, ...recipeAsFoods];
     }
 
     // Filter by search term
@@ -127,6 +146,17 @@ export default function FoodLibrary({ onClose }: FoodLibraryProps) {
     }
   };
 
+  const handleEditRecipe = (recipe: any) => {
+    setEditingRecipe(recipe);
+    setShowRecipeBuilder(true);
+  };
+
+  const handleDeleteRecipe = (recipe: any) => {
+    if (confirm(`Are you sure you want to delete "${recipe.name}"?`)) {
+      dispatch({ type: 'DELETE_RECIPE', payload: recipe.id });
+    }
+  };
+
   const handleCancelEdit = () => {
     setShowAddFood(false);
     setEditingFood(null);
@@ -143,6 +173,7 @@ export default function FoodLibrary({ onClose }: FoodLibraryProps) {
   const tabs = [
     { id: 'all', label: 'All Foods', count: allFoods.length },
     { id: 'custom', label: 'Custom', count: customFoods.length },
+    { id: 'recipes', label: 'Recipes', count: recipes.length },
     { id: 'recent', label: 'Recent', count: allFoods.filter(f => f.lastUsed).length }
   ];
 
@@ -168,12 +199,12 @@ export default function FoodLibrary({ onClose }: FoodLibraryProps) {
 
         {/* Tabs */}
         <div className="bg-white border-b border-gray-200 px-4">
-          <div className="flex">
+          <div className="flex overflow-x-auto">
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
+                className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === tab.id
                     ? 'border-orange-500 text-orange-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -190,7 +221,8 @@ export default function FoodLibrary({ onClose }: FoodLibraryProps) {
           {!showAddFood ? (
             <>
               {/* Search and Add Button */}
-              <div className="flex gap-3 mb-4">
+              <div className="space-y-3 mb-4">
+                <div className="flex gap-3">
                 <div className="flex-1 relative">
                   <input
                     type="text"
@@ -208,6 +240,24 @@ export default function FoodLibrary({ onClose }: FoodLibraryProps) {
                   <Plus className="w-4 h-4" />
                   Add
                 </button>
+              </div>
+                
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowRecipeBuilder(true)}
+                    className="flex-1 bg-pink-500 text-white px-4 py-3 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-pink-600 transition-colors"
+                  >
+                    <ChefHat className="w-4 h-4" />
+                    Create Recipe
+                  </button>
+                  <button
+                    onClick={() => alert('Barcode scanning is not yet available on this device. Please search or add food manually.')}
+                    className="flex-1 bg-purple-500 text-white px-4 py-3 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-purple-600 transition-colors"
+                  >
+                    <Camera className="w-4 h-4" />
+                    Scan Barcode
+                  </button>
+                </div>
               </div>
 
               {/* Food List */}
@@ -229,6 +279,9 @@ export default function FoodLibrary({ onClose }: FoodLibraryProps) {
                             <h3 className="font-semibold text-gray-800">{food.name}</h3>
                             {food.isCustom && (
                               <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded">Custom</span>
+                            )}
+                            {food.isRecipe && (
+                              <span className="text-xs bg-pink-100 text-pink-700 px-2 py-1 rounded">Recipe</span>
                             )}
                           </div>
                           <p className="text-sm text-gray-600 mb-2">{food.category}</p>
@@ -255,18 +308,24 @@ export default function FoodLibrary({ onClose }: FoodLibraryProps) {
                           {food.usageCount && food.usageCount > 0 && (
                             <p className="text-xs text-gray-500 mt-2">Used {food.usageCount} times</p>
                           )}
+                          
+                          {food.isRecipe && food.recipe && (
+                            <p className="text-xs text-gray-500 mt-2">
+                              {food.recipe.ingredients.length} ingredients • Makes {food.recipe.servings} servings
+                            </p>
+                          )}
                         </div>
 
-                        {food.isCustom && (
+                        {(food.isCustom || food.isRecipe) && (
                           <div className="flex items-center gap-2 ml-3">
                             <button
-                              onClick={() => handleEditFood(food)}
+                              onClick={() => food.isRecipe ? handleEditRecipe(food.recipe) : handleEditFood(food)}
                               className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center hover:bg-blue-100 transition-colors"
                             >
                               <Edit3 className="w-4 h-4 text-blue-600" />
                             </button>
                             <button
-                              onClick={() => handleDeleteFood(food)}
+                              onClick={() => food.isRecipe ? handleDeleteRecipe(food.recipe) : handleDeleteFood(food)}
                               className="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center hover:bg-red-100 transition-colors"
                             >
                               <Trash2 className="w-4 h-4 text-red-600" />
@@ -396,5 +455,17 @@ export default function FoodLibrary({ onClose }: FoodLibraryProps) {
         )}
       </div>
     </div>
+
+      {/* Recipe Builder Modal */}
+      {showRecipeBuilder && (
+        <RecipeBuilderModal
+          recipe={editingRecipe}
+          onClose={() => {
+            setShowRecipeBuilder(false);
+            setEditingRecipe(null);
+          }}
+        />
+      )}
+    </>
   );
 }

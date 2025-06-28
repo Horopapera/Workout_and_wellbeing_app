@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import { X, Search, Save, Calculator, Library, Plus } from 'lucide-react';
+import { X, Search, Save, Calculator, Library, Plus, Camera, Zap, Clock, Star } from 'lucide-react';
 import { FoodEntry, PlannedFoodEntry, Food } from '../../types';
 import { mockFoods } from '../../data/mockData';
+import QuickAddModal from './QuickAddModal';
+import RecipeBuilderModal from './RecipeBuilderModal';
 
 interface AddFoodModalProps {
   mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
@@ -14,12 +16,15 @@ interface AddFoodModalProps {
 
 export default function AddFoodModal({ mealType, selectedDate, editingEntry, onClose, isPlanned = false }: AddFoodModalProps) {
   const { state, dispatch } = useApp();
-  const { customFoods, foodEntries } = state;
+  const { customFoods, foodEntries, recipes } = state;
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFood, setSelectedFood] = useState<Food | null>(editingEntry?.food || null);
   const [amount, setAmount] = useState(editingEntry?.amount.toString() || '100');
   const [showCustomFood, setShowCustomFood] = useState(false);
   const [showLibraryView, setShowLibraryView] = useState(false);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [showRecipeBuilder, setShowRecipeBuilder] = useState(false);
+  const [showBarcodePlaceholder, setShowBarcodePlaceholder] = useState(false);
   const [customFood, setCustomFood] = useState({
     name: '',
     caloriesPer100g: '',
@@ -31,6 +36,21 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
   // Combine built-in foods with custom foods
   const allFoods = [...mockFoods, ...customFoods];
   
+  // Convert recipes to food-like objects for selection
+  const recipeAsFoods = recipes.map(recipe => ({
+    id: `recipe-${recipe.id}`,
+    name: `${recipe.name} (Recipe)`,
+    caloriesPer100g: recipe.caloriesPerServing,
+    proteinPer100g: recipe.proteinPerServing,
+    carbsPer100g: recipe.carbsPerServing,
+    fatPer100g: recipe.fatPerServing,
+    category: 'Recipes',
+    isRecipe: true,
+    recipe: recipe
+  }));
+  
+  const allFoodsAndRecipes = [...allFoods, ...recipeAsFoods];
+  
   // Get recent foods (foods used in last 30 days)
   const recentFoodIds = foodEntries
     .filter(entry => {
@@ -41,16 +61,53 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
     })
     .map(entry => entry.foodId);
   
-  const recentFoods = allFoods
+  const recentFoods = allFoodsAndRecipes
     .filter(food => recentFoodIds.includes(food.id))
     .sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0))
     .slice(0, 5);
 
   // Filter foods based on search
-  const filteredFoods = allFoods.filter(food =>
+  const filteredFoods = allFoodsAndRecipes.filter(food =>
     food.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     food.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Get smart suggestions based on time of day
+  const getSmartSuggestions = () => {
+    const hour = new Date().getHours();
+    let suggestions = [];
+    
+    if (mealType === 'breakfast' || (hour >= 6 && hour < 11)) {
+      suggestions = allFoodsAndRecipes.filter(food => 
+        food.name.toLowerCase().includes('egg') ||
+        food.name.toLowerCase().includes('oat') ||
+        food.name.toLowerCase().includes('yogurt') ||
+        food.name.toLowerCase().includes('banana')
+      );
+    } else if (mealType === 'lunch' || (hour >= 11 && hour < 16)) {
+      suggestions = allFoodsAndRecipes.filter(food => 
+        food.name.toLowerCase().includes('chicken') ||
+        food.name.toLowerCase().includes('rice') ||
+        food.name.toLowerCase().includes('salad')
+      );
+    } else if (mealType === 'dinner' || (hour >= 16 && hour < 22)) {
+      suggestions = allFoodsAndRecipes.filter(food => 
+        food.name.toLowerCase().includes('salmon') ||
+        food.name.toLowerCase().includes('beef') ||
+        food.name.toLowerCase().includes('pasta')
+      );
+    } else {
+      suggestions = allFoodsAndRecipes.filter(food => 
+        food.name.toLowerCase().includes('apple') ||
+        food.name.toLowerCase().includes('nuts') ||
+        food.name.toLowerCase().includes('yogurt')
+      );
+    }
+    
+    return suggestions.slice(0, 3);
+  };
+
+  const smartSuggestions = getSmartSuggestions();
 
   // Calculate nutrition based on amount
   const calculateNutrition = (food: Food, grams: number) => {
@@ -73,7 +130,7 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
 
     const amountNum = Number(amount);
     if (amountNum <= 0) {
-      alert('Please enter a valid amount');
+      alert('Please enter a valid amount greater than 0');
       return;
     }
 
@@ -113,6 +170,10 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
     onClose();
   };
 
+  const handleBarcodeClick = () => {
+    setShowBarcodePlaceholder(true);
+  };
+
   const handleCreateCustomFood = () => {
     if (!customFood.name || !customFood.caloriesPer100g) {
       alert('Please enter at least a name and calories per 100g');
@@ -144,7 +205,8 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
     setSearchTerm('');
   };
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50">
+    <>
+      <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50">
       <div className="bg-white rounded-t-2xl w-full max-w-md max-h-[85vh] flex flex-col mb-20">
         {/* Header */}
         <div className="bg-gradient-to-r from-orange-500 to-red-500 px-4 py-6 text-white">
@@ -169,27 +231,83 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
           {!selectedFood ? (
             <>
               {/* Quick Actions */}
-              <div className="flex gap-3">
+              <div className="grid grid-cols-2 gap-3 mb-4">
                 <button
                   onClick={() => setShowLibraryView(true)}
-                  className="flex-1 bg-orange-50 border border-orange-200 text-orange-700 py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-orange-100 transition-colors"
+                  className="bg-orange-50 border border-orange-200 text-orange-700 py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-orange-100 transition-colors"
                 >
                   <Library className="w-4 h-4" />
                   Browse Library
                 </button>
                 <button
                   onClick={() => setShowCustomFood(true)}
-                  className="flex-1 bg-emerald-50 border border-emerald-200 text-emerald-700 py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-emerald-100 transition-colors"
+                  className="bg-emerald-50 border border-emerald-200 text-emerald-700 py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-emerald-100 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   Create Food
                 </button>
+                <button
+                  onClick={() => setShowQuickAdd(true)}
+                  className="bg-blue-50 border border-blue-200 text-blue-700 py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-blue-100 transition-colors"
+                >
+                  <Zap className="w-4 h-4" />
+                  Quick Add
+                </button>
+                <button
+                  onClick={handleBarcodeClick}
+                  className="bg-purple-50 border border-purple-200 text-purple-700 py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-purple-100 transition-colors"
+                >
+                  <Camera className="w-4 h-4" />
+                  Scan Barcode
+                </button>
               </div>
+              
+              <div className="flex gap-3 mb-6">
+                <button
+                  onClick={() => setShowRecipeBuilder(true)}
+                  className="flex-1 bg-gradient-to-r from-pink-500 to-rose-500 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:from-pink-600 hover:to-rose-600 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create Recipe
+                </button>
+              </div>
+
+              {/* Smart Suggestions */}
+              {smartSuggestions.length > 0 && !showLibraryView && !searchTerm && (
+                <div className="mb-6">
+                  <h3 className="font-medium text-gray-800 mb-3 flex items-center gap-2">
+                    <Star className="w-4 h-4 text-yellow-500" />
+                    Suggested for {mealType}
+                  </h3>
+                  <div className="space-y-2">
+                    {smartSuggestions.map(food => (
+                      <button
+                        key={food.id}
+                        onClick={() => handleSelectFood(food)}
+                        className="w-full text-left p-3 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors border border-yellow-200"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium text-gray-800">{food.name}</div>
+                            <div className="text-sm text-gray-600">
+                              {food.category} • {food.caloriesPer100g} cal/100g
+                            </div>
+                          </div>
+                          <Star className="w-4 h-4 text-yellow-500" />
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Recent Foods */}
               {recentFoods.length > 0 && !showLibraryView && (
                 <div>
-                  <h3 className="font-medium text-gray-800 mb-3">Recent Foods</h3>
+                  <h3 className="font-medium text-gray-800 mb-3 flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-gray-600" />
+                    Recent Foods
+                  </h3>
                   <div className="space-y-2">
                     {recentFoods.map(food => (
                       <button
@@ -206,6 +324,9 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
                           </div>
                           {food.isCustom && (
                             <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded">Custom</span>
+                          )}
+                          {food.isRecipe && (
+                            <span className="text-xs bg-pink-100 text-pink-700 px-2 py-1 rounded">Recipe</span>
                           )}
                         </div>
                       </button>
@@ -256,6 +377,9 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
                         </div>
                         {food.isCustom && (
                           <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded">Custom</span>
+                        )}
+                        {food.isRecipe && (
+                          <span className="text-xs bg-pink-100 text-pink-700 px-2 py-1 rounded">Recipe</span>
                         )}
                       </div>
                     </button>
@@ -315,6 +439,9 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
                           </div>
                           {food.isCustom && (
                             <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded">Custom</span>
+                          )}
+                          {food.isRecipe && (
+                            <span className="text-xs bg-pink-100 text-pink-700 px-2 py-1 rounded">Recipe</span>
                           )}
                         </div>
                       </button>
@@ -479,5 +606,49 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
         </div>
       </div>
     </div>
+
+      {/* Quick Add Modal */}
+      {showQuickAdd && (
+        <QuickAddModal
+          mealType={mealType}
+          selectedDate={selectedDate}
+          isPlanned={isPlanned}
+          onClose={() => {
+            setShowQuickAdd(false);
+            onClose();
+          }}
+        />
+      )}
+
+      {/* Recipe Builder Modal */}
+      {showRecipeBuilder && (
+        <RecipeBuilderModal
+          onClose={() => setShowRecipeBuilder(false)}
+        />
+      )}
+
+      {/* Barcode Scanner Placeholder */}
+      {showBarcodePlaceholder && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-2xl p-6 m-4 max-w-sm w-full">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Camera className="w-8 h-8 text-purple-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Barcode Scanner</h3>
+              <p className="text-gray-600 mb-6">
+                Barcode scanning is not yet available on this device. Please search or add food manually.
+              </p>
+              <button
+                onClick={() => setShowBarcodePlaceholder(false)}
+                className="w-full bg-purple-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-purple-600 transition-colors"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

@@ -10,6 +10,7 @@ import FoodLibrary from './FoodLibrary';
 import MacroGoalsSettings from './MacroGoalsSettings';
 import MealPlanner from './MealPlanner';
 import DietHistory from './DietHistory';
+import QuickAddModal from './QuickAddModal';
 import { FoodEntry, PlannedFoodEntry } from '../../types';
 
 export default function DietTracker() {
@@ -23,6 +24,7 @@ export default function DietTracker() {
   const [showFoodLibrary, setShowFoodLibrary] = useState(false);
   const [showMacroGoals, setShowMacroGoals] = useState(false);
   const [showAddPlannedFood, setShowAddPlannedFood] = useState(false);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [selectedPlannedMeal, setSelectedPlannedMeal] = useState<'breakfast' | 'lunch' | 'dinner' | 'snack'>('breakfast');
   const [editingPlannedEntry, setEditingPlannedEntry] = useState<PlannedFoodEntry | null>(null);
   const [selectedDate, setSelectedDate] = useState(currentDate);
@@ -119,6 +121,7 @@ export default function DietTracker() {
         isPastDate={isPastDate}
         onShowFoodLibrary={() => setShowFoodLibrary(true)}
         onShowMacroGoals={() => setShowMacroGoals(true)}
+        onShowQuickAdd={() => setShowQuickAdd(true)}
       />
       
       {/* Tab Navigation */}
@@ -264,6 +267,17 @@ export default function DietTracker() {
           onClose={() => setShowMacroGoals(false)}
         />
       )}
+      
+      {/* Quick Add Modal */}
+      {showQuickAdd && (
+        <QuickAddModal
+          mealType="breakfast"
+          selectedDate={selectedDate}
+          isPlanned={false}
+          onClose={() => setShowQuickAdd(false)}
+        />
+      )}
+      
       {/* Date Selector Modal */}
       {showDateSelector && (
         <DateSelector

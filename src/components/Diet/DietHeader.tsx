@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, ChevronDown, Library, Target } from 'lucide-react';
+import { Calendar, ChevronDown, Library, Target, Zap } from 'lucide-react';
 
 interface DietHeaderProps {
   selectedDate: string;
@@ -8,9 +8,10 @@ interface DietHeaderProps {
   isPastDate: boolean;
   onShowFoodLibrary: () => void;
   onShowMacroGoals: () => void;
+  onShowQuickAdd?: () => void;
 }
 
-export default function DietHeader({ selectedDate, onDateClick, isToday, isPastDate, onShowFoodLibrary, onShowMacroGoals }: DietHeaderProps) {
+export default function DietHeader({ selectedDate, onDateClick, isToday, isPastDate, onShowFoodLibrary, onShowMacroGoals, onShowQuickAdd }: DietHeaderProps) {
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { 
@@ -41,6 +42,14 @@ export default function DietHeader({ selectedDate, onDateClick, isToday, isPastD
           >
             <Library className="w-5 h-5" />
           </button>
+          {onShowQuickAdd && (
+            <button
+              onClick={onShowQuickAdd}
+              className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
+            >
+              <Zap className="w-5 h-5" />
+            </button>
+          )}
           <button
             onClick={onShowMacroGoals}
             className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"

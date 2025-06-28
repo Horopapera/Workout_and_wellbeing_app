@@ -88,6 +88,43 @@ export interface MealTemplate {
   lastUsed?: string;
 }
 
+export interface Recipe {
+  id: string;
+  name: string;
+  description?: string;
+  ingredients: {
+    foodId: string;
+    food: Food;
+    amount: number; // in grams
+  }[];
+  servings: number;
+  instructions?: string;
+  totalCalories: number;
+  totalProtein: number;
+  totalCarbs: number;
+  totalFat: number;
+  caloriesPerServing: number;
+  proteinPerServing: number;
+  carbsPerServing: number;
+  fatPerServing: number;
+  createdAt: string;
+  lastUsed?: string;
+  isCustom?: boolean;
+  createdBy?: string;
+}
+
+export interface QuickAddEntry {
+  id: string;
+  name: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  date: string;
+  createdAt: string;
+}
+
 export interface Exercise {
   id: string;
   name: string;
