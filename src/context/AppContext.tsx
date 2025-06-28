@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import { User, FoodEntry, PlannedFoodEntry, MealTemplate, Workout, Recipe, WellnessEntry, Food, QuickAddEntry, Notification } from '../types';
 import { saveUserProfile, loadUserProfile, saveAppData, loadAppData, clearAllUserData } from '../utils/localStorage';
+import { clearCurrentSession } from '../utils/authStorage';
 
 interface AppState {
   user: User | null;
@@ -156,6 +157,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'LOGOUT_USER':
       // Clear all data from localStorage
       clearAllUserData();
+      // Clear authentication session
+      clearCurrentSession();
       // Reset to initial empty state
       newState = {
         user: null,

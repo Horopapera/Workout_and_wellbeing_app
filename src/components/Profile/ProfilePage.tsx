@@ -40,7 +40,7 @@ export default function ProfilePage() {
   };
 
   const handleLogout = () => {
-    if (confirm('Are you sure you want to log out? This will clear all your data.')) {
+    if (confirm('Are you sure you want to log out? You can log back in anytime.')) {
       dispatch({ type: 'LOGOUT_USER' });
     }
   };
@@ -247,10 +247,10 @@ export default function ProfilePage() {
           
           <button
             onClick={handleLogout}
-            className="w-full bg-red-50 text-red-600 py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-red-100 transition-colors"
+            className="w-full bg-orange-50 text-orange-600 py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-orange-100 transition-colors"
           >
             <LogOut className="w-4 h-4" />
-            Logout
+            Switch User / Logout
           </button>
         </div>
       </div>

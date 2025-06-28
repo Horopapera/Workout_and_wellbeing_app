@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
+import AuthFlow from './components/Auth/AuthFlow';
 import OnboardingFlow from './components/Onboarding/OnboardingFlow';
 import Dashboard from './components/Dashboard/Dashboard';
 import { useEffect } from 'react';
@@ -13,6 +14,7 @@ import { Workout } from './types';
 function AppContent() {
   const { state } = useApp();
   const { dispatch } = useApp();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [showWorkoutSession, setShowWorkoutSession] = useState(false);
   const [activeWorkout, setActiveWorkout] = useState<Workout | null>(null);
@@ -28,6 +30,11 @@ function AppContent() {
       window.removeEventListener('navigate-to-profile', handleNavigateToProfile);
     };
   }, []);
+
+  // Show auth flow if user is not authenticated
+  if (!isAuthenticated) {
+    return <AuthFlow onAuthenticated={() => setIsAuthenticated(true)} />;
+  }
 
   // Show onboarding if user hasn't completed it
   if (!state.user || !state.user.onboardingCompleted) {

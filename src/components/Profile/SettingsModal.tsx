@@ -42,11 +42,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
   };
 
   const handleDeleteAccount = () => {
-    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      if (confirm('This will permanently delete all your data. Are you absolutely sure?')) {
-        dispatch({ type: 'LOGOUT_USER' });
-      }
-    }
+    alert('Account deletion will be available when connected to a real backend. For now, you can log out and create a new account.');
   };
 
   return (
@@ -250,12 +246,12 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
               
               <button
                 onClick={handleDeleteAccount}
-                className="w-full flex items-center gap-3 p-3 bg-red-50 rounded-lg hover:bg-red-100 transition-colors text-left"
+                className="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors text-left"
               >
-                <Trash2 className="w-5 h-5 text-red-600" />
+                <Trash2 className="w-5 h-5 text-gray-600" />
                 <div>
-                  <span className="font-medium text-red-800">Delete Account</span>
-                  <p className="text-sm text-red-600">Permanently delete your account and data</p>
+                  <span className="font-medium text-gray-800">Delete Account</span>
+                  <p className="text-sm text-gray-600">Available in future versions</p>
                 </div>
               </button>
             </div>
