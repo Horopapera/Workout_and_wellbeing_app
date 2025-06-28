@@ -9,11 +9,18 @@ interface DailyNutritionSummaryProps {
     carbs: number;
     fat: number;
   };
+  plannedNutrition?: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  };
   targets: User;
   selectedDate: string;
+  showComparison?: boolean;
 }
 
-export default function DailyNutritionSummary({ nutrition, targets, selectedDate }: DailyNutritionSummaryProps) {
+export default function DailyNutritionSummary({ nutrition, plannedNutrition, targets, selectedDate, showComparison = false }: DailyNutritionSummaryProps) {
   const isToday = selectedDate === new Date().toISOString().split('T')[0];
   
   // Use custom macro goals if set, otherwise use calculated targets
@@ -119,6 +126,56 @@ export default function DailyNutritionSummary({ nutrition, targets, selectedDate
           );
         })}
       </div>
+
+      {/* Planned vs Actual Comparison */}
+      {showComparison && plannedNutrition && (
+        <div className="border-t pt-4">
+          <h3 className="font-medium text-gray-800 mb-3">Planned vs Actual</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-blue-50 rounded-lg p-3">
+              <h4 className="text-sm font-medium text-blue-800 mb-2">Planned</h4>
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-blue-700">Calories:</span>
+                  <span className="font-medium text-blue-800">{Math.round(plannedNutrition.calories)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-blue-700">Protein:</span>
+                  <span className="font-medium text-blue-800">{Math.round(plannedNutrition.protein)}g</span>
+                </div>
+              </div>
+            </div>
+            <div className="bg-emerald-50 rounded-lg p-3">
+              <h4 className="text-sm font-medium text-emerald-800 mb-2">Actual</h4>
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-emerald-700">Calories:</span>
+                  <span className="font-medium text-emerald-800">{Math.round(nutrition.calories)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-emerald-700">Protein:</span>
+                  <span className="font-medium text-emerald-800">{Math.round(nutrition.protein)}g</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Variance */}
+          <div className="mt-3 text-center">
+            <div className="text-sm text-gray-600">
+              Variance: 
+              <span className={`ml-1 font-medium ${
+                Math.abs(nutrition.calories - plannedNutrition.calories) <= 50 
+                  ? 'text-emerald-600' 
+                  : 'text-orange-600'
+              }`}>
+                {nutrition.calories > plannedNutrition.calories ? '+' : ''}
+                {Math.round(nutrition.calories - plannedNutrition.calories)} cal
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Quick Insights */}
       <div className="border-t pt-4">

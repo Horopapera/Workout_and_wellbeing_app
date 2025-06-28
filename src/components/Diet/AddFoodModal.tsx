@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { X, Search, Save, Calculator, Library, Plus } from 'lucide-react';
-import { FoodEntry, Food } from '../../types';
+import { FoodEntry, PlannedFoodEntry, Food } from '../../types';
 import { mockFoods } from '../../data/mockData';
 
 interface AddFoodModalProps {
   mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
   selectedDate: string;
-  editingEntry?: FoodEntry | null;
+  editingEntry?: FoodEntry | PlannedFoodEntry | null;
   onClose: () => void;
+  isPlanned?: boolean;
 }
 
-export default function AddFoodModal({ mealType, selectedDate, editingEntry, onClose }: AddFoodModalProps) {
+export default function AddFoodModal({ mealType, selectedDate, editingEntry, onClose, isPlanned = false }: AddFoodModalProps) {
   const { state, dispatch } = useApp();
   const { customFoods, foodEntries } = state;
   const [searchTerm, setSearchTerm] = useState('');
@@ -78,7 +79,7 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
 
     const calculatedNutrition = calculateNutrition(selectedFood, amountNum);
 
-    const foodEntry: FoodEntry = {
+    const foodEntry: FoodEntry | PlannedFoodEntry = {
       id: editingEntry?.id || Date.now().toString(),
       foodId: selectedFood.id,
       food: selectedFood,
@@ -93,9 +94,17 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
     };
 
     if (editingEntry) {
-      dispatch({ type: 'UPDATE_FOOD_ENTRY', payload: foodEntry });
+      if (isPlanned) {
+        dispatch({ type: 'UPDATE_PLANNED_FOOD_ENTRY', payload: foodEntry as PlannedFoodEntry });
+      } else {
+        dispatch({ type: 'UPDATE_FOOD_ENTRY', payload: foodEntry as FoodEntry });
+      }
     } else {
-      dispatch({ type: 'ADD_FOOD_ENTRY', payload: foodEntry });
+      if (isPlanned) {
+        dispatch({ type: 'ADD_PLANNED_FOOD_ENTRY', payload: foodEntry as PlannedFoodEntry });
+      } else {
+        dispatch({ type: 'ADD_FOOD_ENTRY', payload: foodEntry as FoodEntry });
+      }
     }
 
     // Update food usage tracking
@@ -141,7 +150,7 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
         <div className="bg-gradient-to-r from-orange-500 to-red-500 px-4 py-6 text-white">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold">
-              {editingEntry ? 'Edit Food' : 'Add Food'}
+              {editingEntry ? (isPlanned ? 'Edit Planned Food' : 'Edit Food') : (isPlanned ? 'Plan Food' : 'Add Food')}
             </h2>
             <button
               onClick={onClose}
@@ -150,7 +159,9 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
               <X className="w-5 h-5" />
             </button>
           </div>
-          <p className="text-white/80 mt-2 capitalize">{mealType}</p>
+          <p className="text-white/80 mt-2 capitalize">
+            {isPlanned ? 'Planning' : 'Logging'} • {mealType}
+          </p>
         </div>
 
         {/* Content */}
@@ -461,7 +472,7 @@ export default function AddFoodModal({ mealType, selectedDate, editingEntry, onC
                 }`}
               >
                 <Save className="w-4 h-4" />
-                {editingEntry ? 'Update' : 'Add'} Food
+                {editingEntry ? 'Update' : (isPlanned ? 'Plan' : 'Add')} Food
               </button>
             )}
           </div>

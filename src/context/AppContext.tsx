@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import { User, FoodEntry, Workout, Recipe, WellnessEntry } from '../types';
+import { User, FoodEntry, PlannedFoodEntry, MealTemplate, Workout, Recipe, WellnessEntry, Food } from '../types';
 
 interface AppState {
   user: User | null;
   foodEntries: FoodEntry[];
+  plannedFoodEntries: PlannedFoodEntry[];
+  mealTemplates: MealTemplate[];
   workouts: Workout[];
   recipes: Recipe[];
   wellnessEntries: WellnessEntry[];
@@ -17,6 +19,14 @@ type AppAction =
   | { type: 'ADD_FOOD_ENTRY'; payload: FoodEntry }
   | { type: 'UPDATE_FOOD_ENTRY'; payload: FoodEntry }
   | { type: 'DELETE_FOOD_ENTRY'; payload: string }
+  | { type: 'ADD_PLANNED_FOOD_ENTRY'; payload: PlannedFoodEntry }
+  | { type: 'UPDATE_PLANNED_FOOD_ENTRY'; payload: PlannedFoodEntry }
+  | { type: 'DELETE_PLANNED_FOOD_ENTRY'; payload: string }
+  | { type: 'COPY_PLANNED_MEALS'; payload: { fromDate: string; toDate: string } }
+  | { type: 'ADD_MEAL_TEMPLATE'; payload: MealTemplate }
+  | { type: 'UPDATE_MEAL_TEMPLATE'; payload: MealTemplate }
+  | { type: 'DELETE_MEAL_TEMPLATE'; payload: string }
+  | { type: 'APPLY_MEAL_TEMPLATE'; payload: { templateId: string; date: string } }
   | { type: 'ADD_CUSTOM_FOOD'; payload: Food }
   | { type: 'UPDATE_CUSTOM_FOOD'; payload: Food }
   | { type: 'DELETE_CUSTOM_FOOD'; payload: string }
@@ -31,6 +41,8 @@ type AppAction =
 const initialState: AppState = {
   user: null,
   foodEntries: [],
+  plannedFoodEntries: [],
+  mealTemplates: [],
   workouts: [],
   recipes: [],
   wellnessEntries: [],
@@ -63,6 +75,78 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         foodEntries: state.foodEntries.filter(entry => entry.id !== action.payload)
+      };
+    case 'ADD_PLANNED_FOOD_ENTRY':
+      return { ...state, plannedFoodEntries: [...state.plannedFoodEntries, action.payload] };
+    case 'UPDATE_PLANNED_FOOD_ENTRY':
+      return {
+        ...state,
+        plannedFoodEntries: state.plannedFoodEntries.map(entry => 
+          entry.id === action.payload.id ? action.payload : entry
+        )
+      };
+    case 'DELETE_PLANNED_FOOD_ENTRY':
+      return {
+        ...state,
+        plannedFoodEntries: state.plannedFoodEntries.filter(entry => entry.id !== action.payload)
+      };
+    case 'COPY_PLANNED_MEALS':
+      const { fromDate, toDate } = action.payload;
+      const mealsFromDate = state.plannedFoodEntries.filter(entry => entry.date === fromDate);
+      const copiedMeals = mealsFromDate.map(entry => ({
+        ...entry,
+        id: `${entry.id}-copy-${Date.now()}-${Math.random()}`,
+        date: toDate,
+        createdAt: new Date().toISOString()
+      }));
+      return {
+        ...state,
+        plannedFoodEntries: [...state.plannedFoodEntries, ...copiedMeals]
+      };
+    case 'ADD_MEAL_TEMPLATE':
+      return { ...state, mealTemplates: [...state.mealTemplates, action.payload] };
+    case 'UPDATE_MEAL_TEMPLATE':
+      return {
+        ...state,
+        mealTemplates: state.mealTemplates.map(template => 
+          template.id === action.payload.id ? action.payload : template
+        )
+      };
+    case 'DELETE_MEAL_TEMPLATE':
+      return {
+        ...state,
+        mealTemplates: state.mealTemplates.filter(template => template.id !== action.payload)
+      };
+    case 'APPLY_MEAL_TEMPLATE':
+      const { templateId, date } = action.payload;
+      const template = state.mealTemplates.find(t => t.id === templateId);
+      if (!template) return state;
+      
+      // Remove existing planned meals for this date
+      const filteredPlanned = state.plannedFoodEntries.filter(entry => entry.date !== date);
+      
+      // Create new planned entries from template
+      const newPlannedEntries: PlannedFoodEntry[] = [];
+      Object.entries(template.meals).forEach(([mealType, entries]) => {
+        entries.forEach(entry => {
+          newPlannedEntries.push({
+            ...entry,
+            id: `template-${templateId}-${entry.id}-${Date.now()}-${Math.random()}`,
+            date,
+            createdAt: new Date().toISOString()
+          });
+        });
+      });
+      
+      // Update template last used
+      const updatedTemplates = state.mealTemplates.map(t => 
+        t.id === templateId ? { ...t, lastUsed: new Date().toISOString() } : t
+      );
+      
+      return {
+        ...state,
+        plannedFoodEntries: [...filteredPlanned, ...newPlannedEntries],
+        mealTemplates: updatedTemplates
       };
     case 'ADD_CUSTOM_FOOD':
       return { ...state, customFoods: [...state.customFoods, action.payload] };

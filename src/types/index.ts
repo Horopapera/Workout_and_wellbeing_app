@@ -56,6 +56,38 @@ export interface FoodEntry {
   createdAt?: string;
 }
 
+export interface PlannedFoodEntry {
+  id: string;
+  foodId: string;
+  food: Food;
+  amount: number; // in grams
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  date: string;
+  createdAt?: string;
+}
+
+export interface MealTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  meals: {
+    breakfast: PlannedFoodEntry[];
+    lunch: PlannedFoodEntry[];
+    dinner: PlannedFoodEntry[];
+    snack: PlannedFoodEntry[];
+  };
+  totalCalories: number;
+  totalProtein: number;
+  totalCarbs: number;
+  totalFat: number;
+  createdAt: string;
+  lastUsed?: string;
+}
+
 export interface Exercise {
   id: string;
   name: string;
