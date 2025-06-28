@@ -41,8 +41,7 @@ export default function ProfilePage() {
 
   const handleLogout = () => {
     if (confirm('Are you sure you want to log out? This will clear all your data.')) {
-      // For now, just reload the page to trigger onboarding
-      window.location.reload();
+      dispatch({ type: 'LOGOUT_USER' });
     }
   };
 

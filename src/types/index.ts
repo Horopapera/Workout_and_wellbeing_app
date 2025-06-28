@@ -25,6 +25,8 @@ export interface User {
     fat: number;
   };
   avatar?: string;
+  createdAt?: string;
+  lastLoginAt?: string;
   preferences?: {
     notifications: {
       workouts: boolean;

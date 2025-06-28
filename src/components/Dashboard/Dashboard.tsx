@@ -44,8 +44,8 @@ export default function Dashboard({ onStartWorkout }: DashboardProps) {
         user={user} 
         onNotificationClick={() => setShowNotifications(true)}
         onProfileClick={() => {
-          // This will be handled by the main App component
-          console.log('Profile clicked');
+          // Navigate to profile - this will be handled by the main App component
+          window.dispatchEvent(new CustomEvent('navigate-to-profile'));
         }}
       />
       

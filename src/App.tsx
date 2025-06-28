@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import OnboardingFlow from './components/Onboarding/OnboardingFlow';
 import Dashboard from './components/Dashboard/Dashboard';
+import { useEffect } from 'react';
 import ProfilePage from './components/Profile/ProfilePage';
 import WorkoutPlans from './components/Workout/WorkoutPlans';
 import WorkoutSession from './components/Workout/WorkoutSession';
@@ -16,8 +17,20 @@ function AppContent() {
   const [showWorkoutSession, setShowWorkoutSession] = useState(false);
   const [activeWorkout, setActiveWorkout] = useState<Workout | null>(null);
 
+  // Listen for navigation events
+  useEffect(() => {
+    const handleNavigateToProfile = () => {
+      setCurrentTab('profile');
+    };
+
+    window.addEventListener('navigate-to-profile', handleNavigateToProfile);
+    return () => {
+      window.removeEventListener('navigate-to-profile', handleNavigateToProfile);
+    };
+  }, []);
+
   // Show onboarding if user hasn't completed it
-  if (!state.user?.onboardingCompleted) {
+  if (!state.user || !state.user.onboardingCompleted) {
     return <OnboardingFlow />;
   }
 

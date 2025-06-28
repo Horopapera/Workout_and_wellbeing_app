@@ -10,6 +10,25 @@ export default function NotificationCenter({ onClose }: NotificationCenterProps)
   const { state, dispatch } = useApp();
   const { notifications } = state;
 
+  // Add a welcome notification for returning users
+  React.useEffect(() => {
+    const hasWelcomeNotification = notifications.some(n => n.type === 'reminder' && n.title.includes('Welcome'));
+    
+    if (!hasWelcomeNotification && notifications.length === 0) {
+      dispatch({
+        type: 'ADD_NOTIFICATION',
+        payload: {
+          id: `welcome-${Date.now()}`,
+          type: 'reminder',
+          title: 'Welcome to your fitness journey!',
+          message: 'Your profile has been saved and will persist between sessions',
+          timestamp: new Date().toISOString(),
+          read: false
+        }
+      });
+    }
+  }, []);
+
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const getNotificationIcon = (type: string) => {

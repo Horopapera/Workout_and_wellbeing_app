@@ -43,7 +43,9 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
 
   const handleDeleteAccount = () => {
     if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      alert('Account deletion feature will be available in a future update.');
+      if (confirm('This will permanently delete all your data. Are you absolutely sure?')) {
+        dispatch({ type: 'LOGOUT_USER' });
+      }
     }
   };
 

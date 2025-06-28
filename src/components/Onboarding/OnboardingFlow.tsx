@@ -73,7 +73,7 @@ export default function OnboardingFlow() {
     const macros = calculateMacros(calories);
     
     const user: User = {
-      id: '1',
+      id: `user-${Date.now()}`, // Generate unique ID
       name: userData.name || 'User',
       email: userData.email || 'user@example.com',
       goal: userData.goal || 'maintain',
@@ -88,7 +88,9 @@ export default function OnboardingFlow() {
       dailyCalories: calories,
       macroTargets: macros,
       onboardingCompleted: true,
-      preferences: userData.preferences
+      preferences: userData.preferences,
+      createdAt: new Date().toISOString(),
+      lastLoginAt: new Date().toISOString()
     };
 
     dispatch({ type: 'SET_USER', payload: user });

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import { User, FoodEntry, PlannedFoodEntry, MealTemplate, Workout, Recipe, WellnessEntry, Food, QuickAddEntry, Notification } from '../types';
+import { saveUserProfile, loadUserProfile, saveAppData, loadAppData, clearAllUserData } from '../utils/localStorage';
 
 interface AppState {
   user: User | null;
@@ -45,9 +46,44 @@ type AppAction =
   | { type: 'ADD_NOTIFICATION'; payload: Notification }
   | { type: 'MARK_NOTIFICATION_READ'; payload: string }
   | { type: 'CLEAR_ALL_NOTIFICATIONS' }
-  | { type: 'DELETE_NOTIFICATION'; payload: string };
+  | { type: 'DELETE_NOTIFICATION'; payload: string }
+  | { type: 'LOGOUT_USER' }
+  | { type: 'LOAD_USER_DATA'; payload: { user: User; appData: any } };
 
-const initialState: AppState = {
+// Load user profile from localStorage on app start
+const loadInitialState = (): AppState => {
+  const savedUser = loadUserProfile();
+  
+  if (savedUser) {
+    // Load user-specific app data
+    const appData = loadAppData(savedUser.id);
+    
+    return {
+      user: savedUser,
+      foodEntries: appData?.foodEntries || [],
+      plannedFoodEntries: appData?.plannedFoodEntries || [],
+      mealTemplates: appData?.mealTemplates || [],
+      workouts: appData?.workouts || [],
+      recipes: appData?.recipes || [],
+      wellnessEntries: appData?.wellnessEntries || [],
+      currentDate: new Date().toISOString().split('T')[0],
+      customFoods: appData?.customFoods || [],
+      quickAddEntries: appData?.quickAddEntries || [],
+      notifications: appData?.notifications || [
+        {
+          id: '1',
+          type: 'reminder',
+          title: 'Welcome back!',
+          message: 'Continue your fitness journey today',
+          timestamp: new Date().toISOString(),
+          read: false
+        }
+      ]
+    };
+  }
+  
+  // Default state for new users
+  return {
   user: null,
   foodEntries: [],
   plannedFoodEntries: [],
@@ -77,47 +113,115 @@ const initialState: AppState = {
     }
   ]
 };
+};
+
+const initialState: AppState = loadInitialState();
+
+// Save app data to localStorage whenever state changes
+const saveAppDataToStorage = (state: AppState) => {
+  if (state.user) {
+    const appData = {
+      foodEntries: state.foodEntries,
+      plannedFoodEntries: state.plannedFoodEntries,
+      mealTemplates: state.mealTemplates,
+      workouts: state.workouts,
+      recipes: state.recipes,
+      wellnessEntries: state.wellnessEntries,
+      customFoods: state.customFoods,
+      quickAddEntries: state.quickAddEntries,
+      notifications: state.notifications
+    };
+    saveAppData(state.user.id, appData);
+  }
+};
 
 function appReducer(state: AppState, action: AppAction): AppState {
+  let newState: AppState;
+  
   switch (action.type) {
     case 'SET_USER':
-      return { ...state, user: action.payload };
+      newState = { ...state, user: action.payload };
+      // Save user profile to localStorage
+      saveUserProfile(action.payload);
+      break;
+      
+    case 'LOAD_USER_DATA':
+      newState = {
+        ...state,
+        user: action.payload.user,
+        ...action.payload.appData
+      };
+      break;
+      
+    case 'LOGOUT_USER':
+      // Clear all data from localStorage
+      clearAllUserData();
+      // Reset to initial empty state
+      newState = {
+        user: null,
+        foodEntries: [],
+        plannedFoodEntries: [],
+        mealTemplates: [],
+        workouts: [],
+        recipes: [],
+        wellnessEntries: [],
+        currentDate: new Date().toISOString().split('T')[0],
+        customFoods: [],
+        quickAddEntries: [],
+        notifications: []
+      };
+      break;
+      
     case 'UPDATE_USER_MACRO_GOALS':
-      return {
+      newState = {
         ...state,
         user: state.user ? {
           ...state.user,
           customMacroGoals: action.payload
         } : null
       };
+      break;
+      
     case 'ADD_FOOD_ENTRY':
-      return { ...state, foodEntries: [...state.foodEntries, action.payload] };
+      newState = { ...state, foodEntries: [...state.foodEntries, action.payload] };
+      break;
+      
     case 'UPDATE_FOOD_ENTRY':
-      return {
+      newState = {
         ...state,
         foodEntries: state.foodEntries.map(entry => 
           entry.id === action.payload.id ? action.payload : entry
         )
       };
+      break;
+      
     case 'DELETE_FOOD_ENTRY':
-      return {
+      newState = {
         ...state,
         foodEntries: state.foodEntries.filter(entry => entry.id !== action.payload)
       };
+      break;
+      
     case 'ADD_PLANNED_FOOD_ENTRY':
-      return { ...state, plannedFoodEntries: [...state.plannedFoodEntries, action.payload] };
+      newState = { ...state, plannedFoodEntries: [...state.plannedFoodEntries, action.payload] };
+      break;
+      
     case 'UPDATE_PLANNED_FOOD_ENTRY':
-      return {
+      newState = {
         ...state,
         plannedFoodEntries: state.plannedFoodEntries.map(entry => 
           entry.id === action.payload.id ? action.payload : entry
         )
       };
+      break;
+      
     case 'DELETE_PLANNED_FOOD_ENTRY':
-      return {
+      newState = {
         ...state,
         plannedFoodEntries: state.plannedFoodEntries.filter(entry => entry.id !== action.payload)
       };
+      break;
+      
     case 'COPY_PLANNED_MEALS':
       const { fromDate, toDate } = action.payload;
       const mealsFromDate = state.plannedFoodEntries.filter(entry => entry.date === fromDate);
@@ -127,28 +231,39 @@ function appReducer(state: AppState, action: AppAction): AppState {
         date: toDate,
         createdAt: new Date().toISOString()
       }));
-      return {
+      newState = {
         ...state,
         plannedFoodEntries: [...state.plannedFoodEntries, ...copiedMeals]
       };
+      break;
+      
     case 'ADD_MEAL_TEMPLATE':
-      return { ...state, mealTemplates: [...state.mealTemplates, action.payload] };
+      newState = { ...state, mealTemplates: [...state.mealTemplates, action.payload] };
+      break;
+      
     case 'UPDATE_MEAL_TEMPLATE':
-      return {
+      newState = {
         ...state,
         mealTemplates: state.mealTemplates.map(template => 
           template.id === action.payload.id ? action.payload : template
         )
       };
+      break;
+      
     case 'DELETE_MEAL_TEMPLATE':
-      return {
+      newState = {
         ...state,
         mealTemplates: state.mealTemplates.filter(template => template.id !== action.payload)
       };
+      break;
+      
     case 'APPLY_MEAL_TEMPLATE':
       const { templateId, date } = action.payload;
       const template = state.mealTemplates.find(t => t.id === templateId);
-      if (!template) return state;
+      if (!template) {
+        newState = state;
+        break;
+      }
       
       // Remove existing planned meals for this date
       const filteredPlanned = state.plannedFoodEntries.filter(entry => entry.date !== date);
@@ -187,82 +302,126 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'ADD_QUICK_ADD_ENTRY':
       return { ...state, quickAddEntries: [...state.quickAddEntries, action.payload] };
       
-      return {
+      newState = {
         ...state,
         plannedFoodEntries: [...filteredPlanned, ...newPlannedEntries],
         mealTemplates: updatedTemplates
       };
+      break;
+      
     case 'ADD_CUSTOM_FOOD':
-      return { ...state, customFoods: [...state.customFoods, action.payload] };
+      newState = { ...state, customFoods: [...state.customFoods, action.payload] };
+      break;
+      
     case 'UPDATE_CUSTOM_FOOD':
-      return {
+      newState = {
         ...state,
         customFoods: state.customFoods.map(food => 
           food.id === action.payload.id ? action.payload : food
         )
       };
+      break;
+      
     case 'DELETE_CUSTOM_FOOD':
-      return {
+      newState = {
         ...state,
         customFoods: state.customFoods.filter(food => food.id !== action.payload)
       };
+      break;
+      newState = { ...state, recipes: [...state.recipes, action.payload] };
+      break;
+      
     case 'UPDATE_FOOD_USAGE':
-      // Update usage count and last used date for both custom and built-in foods
-      return {
+      newState = {
+      newState = {
         ...state,
         customFoods: state.customFoods.map(food => 
           food.id === action.payload ? {
             ...food,
+      break;
+      
             lastUsed: new Date().toISOString(),
-            usageCount: (food.usageCount || 0) + 1
+      newState = {
           } : food
         )
       };
+      break;
+      
+      break;
+      newState = { ...state, quickAddEntries: [...state.quickAddEntries, action.payload] };
+      break;
+      
     case 'ADD_WORKOUT':
       // Check if workout with same ID already exists (prevent duplicates)
       const existingWorkout = state.workouts.find(w => w.id === action.payload.id);
       if (existingWorkout) {
-        return state;
+        newState = state;
+        break;
       }
-      return { ...state, workouts: [...state.workouts, action.payload] };
+      newState = { ...state, workouts: [...state.workouts, action.payload] };
+      break;
+      
     case 'UPDATE_WORKOUT':
-      return {
+      newState = {
         ...state,
         workouts: state.workouts.map(w => 
           w.id === action.payload.id ? action.payload : w
         )
       };
+      break;
+      
     case 'DELETE_WORKOUT':
-      return {
+      newState = {
         ...state,
         workouts: state.workouts.filter(w => w.id !== action.payload)
       };
+      break;
+      
     case 'ADD_WELLNESS_ENTRY':
-      return { ...state, wellnessEntries: [...state.wellnessEntries, action.payload] };
+      newState = { ...state, wellnessEntries: [...state.wellnessEntries, action.payload] };
+      break;
+      
     case 'SET_CURRENT_DATE':
-      return { ...state, currentDate: action.payload };
+      newState = { ...state, currentDate: action.payload };
+      break;
+      
     case 'ADD_NOTIFICATION':
-      return { ...state, notifications: [action.payload, ...state.notifications] };
+      newState = { ...state, notifications: [action.payload, ...state.notifications] };
+      break;
+      
     case 'MARK_NOTIFICATION_READ':
-      return {
+      newState = {
         ...state,
         notifications: state.notifications.map(notification =>
           notification.id === action.payload ? { ...notification, read: true } : notification
         )
       };
+      break;
+      
     case 'CLEAR_ALL_NOTIFICATIONS':
-      return {
+      newState = {
         ...state,
         notifications: state.notifications.map(notification => ({ ...notification, read: true }))
       };
+      break;
+      
     case 'DELETE_NOTIFICATION':
-      return {
+      newState = {
         ...state,
         notifications: state.notifications.filter(notification => notification.id !== action.payload)
       };
+      break;
+      
     default:
-      return state;
+      newState = state;
   }
+  
+  // Save app data to localStorage after state changes (except for logout)
+  if (action.type !== 'LOGOUT_USER') {
+    saveAppDataToStorage(newState);
+  }
+  
+  return newState;
 }
 
 const AppContext = createContext<{
