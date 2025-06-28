@@ -91,7 +91,7 @@ export default function ExerciseForm({ exercise, onChange }: ExerciseFormProps) 
 
         {/* Exercise Search Dropdown */}
         {showExerciseSearch && (
-          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+          <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-y-auto">
             <div className="p-2">
               <input
                 type="text"
@@ -102,7 +102,7 @@ export default function ExerciseForm({ exercise, onChange }: ExerciseFormProps) 
                 autoFocus
               />
             </div>
-            <div className="max-h-32 overflow-y-auto">
+            <div className="max-h-48 overflow-y-auto">
               {filteredExercises.map(ex => (
                 <button
                   key={ex.id}
@@ -113,6 +113,20 @@ export default function ExerciseForm({ exercise, onChange }: ExerciseFormProps) 
                   <div className="text-sm text-gray-600">{ex.category} • {ex.muscleGroups.join(', ')}</div>
                 </button>
               ))}
+              {searchTerm && !filteredExercises.some(ex => ex.name.toLowerCase() === searchTerm.toLowerCase()) && (
+                <button
+                  onClick={() => handleExerciseSelect({
+                    id: 'custom-' + Date.now(),
+                    name: searchTerm,
+                    category: 'Custom',
+                    muscleGroups: ['Custom']
+                  })}
+                  className="w-full text-left px-4 py-2 hover:bg-emerald-50 border-b border-gray-100 bg-emerald-25"
+                >
+                  <div className="font-medium text-emerald-700">+ Create "{searchTerm}"</div>
+                  <div className="text-sm text-emerald-600">Add as custom exercise</div>
+                </button>
+              )}
             </div>
             <button
               onClick={() => setShowExerciseSearch(false)}

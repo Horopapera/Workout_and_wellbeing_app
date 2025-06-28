@@ -79,7 +79,7 @@ export default function WorkoutForm({ workout, onClose }: WorkoutFormProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50">
-      <div className="bg-white rounded-t-2xl w-full max-w-md max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-t-2xl w-full max-w-md max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="bg-gradient-to-r from-emerald-500 to-blue-500 px-4 py-6 text-white">
           <div className="flex items-center justify-between">
@@ -96,7 +96,7 @@ export default function WorkoutForm({ workout, onClose }: WorkoutFormProps) {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 space-y-6 min-h-0">
           {/* Workout Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
