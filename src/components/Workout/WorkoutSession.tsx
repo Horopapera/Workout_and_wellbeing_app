@@ -64,12 +64,14 @@ export default function WorkoutSession({ workout, onClose, onComplete }: Workout
 
     // Move to next set or exercise
     if (currentSetIndex < totalSets - 1) {
+      // Move to next set in current exercise
       setCurrentSetIndex(currentSetIndex + 1);
     } else if (currentExerciseIndex < exercises.length - 1) {
+      // Move to next exercise
       setCurrentExerciseIndex(currentExerciseIndex + 1);
       setCurrentSetIndex(0);
     } else {
-      // Workout complete
+      // All exercises and sets complete - finish workout
       completeWorkout(updatedExercises);
       return;
     }
@@ -78,17 +80,35 @@ export default function WorkoutSession({ workout, onClose, onComplete }: Workout
   };
 
   const handleSkipSet = () => {
+    // Mark current set as skipped (0 reps but completed)
+    const updatedExercises = [...exercises];
+    updatedExercises[currentExerciseIndex].sets[currentSetIndex] = {
+      ...currentSet,
+      reps: 0,
+      completed: true
+    };
+    setExercises(updatedExercises);
+
     // Move to next set or exercise without completing
     if (currentSetIndex < totalSets - 1) {
+      // Move to next set in current exercise
       setCurrentSetIndex(currentSetIndex + 1);
     } else if (currentExerciseIndex < exercises.length - 1) {
+      // Move to next exercise
       setCurrentExerciseIndex(currentExerciseIndex + 1);
       setCurrentSetIndex(0);
     } else {
-      // End workout
-      completeWorkout(exercises);
+      // All exercises and sets complete - finish workout
+      completeWorkout(updatedExercises);
+      return;
     }
+    
     setBankedReps(0);
+  };
+
+  const handleCompleteWorkout = () => {
+    // Force complete the workout even if not all sets are done
+    completeWorkout(exercises);
   };
 
   const completeWorkout = (finalExercises: WorkoutExercise[]) => {
@@ -145,6 +165,14 @@ export default function WorkoutSession({ workout, onClose, onComplete }: Workout
 
   const quickRepOptions = [1, 5, 10, Math.max(1, Math.floor(targetReps / 4))].filter((val, index, arr) => arr.indexOf(val) === index && val <= targetReps);
 
+  // Check if this is the last set of the last exercise
+  const isLastSet = currentExerciseIndex === exercises.length - 1 && currentSetIndex === totalSets - 1;
+  
+  // Check if there are more exercises after current one
+  const hasMoreExercises = currentExerciseIndex < exercises.length - 1;
+  
+  // Check if there are more sets in current exercise
+  const hasMoreSets = currentSetIndex < totalSets - 1;
   return (
     <div className="fixed inset-0 bg-gray-900 z-50 flex flex-col">
       {/* Header */}
@@ -322,26 +350,56 @@ export default function WorkoutSession({ workout, onClose, onComplete }: Workout
 
       {/* Bottom Actions - Fixed */}
       <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0 pb-24">
-        <div className="flex gap-3">
-          <button
-            onClick={handleSkipSet}
-            className="flex-1 bg-gray-100 text-gray-700 py-4 px-4 rounded-lg font-medium hover:bg-gray-200 active:bg-gray-300 transition-colors text-lg"
-          >
-            Skip Set
-          </button>
-          <button
-            onClick={handleCompleteSet}
-            disabled={bankedReps === 0}
-            className={`flex-1 py-4 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors text-lg ${
-              bankedReps === 0
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white hover:from-emerald-600 hover:to-blue-600 active:from-emerald-700 active:to-blue-700'
-            }`}
-          >
-            <Check className="w-4 h-4" />
-            Complete Set
-          </button>
-        </div>
+        {isLastSet ? (
+          // Last set - show finish workout options
+          <div className="space-y-3">
+            {bankedReps > 0 && (
+              <button
+                onClick={handleCompleteSet}
+                className="w-full bg-gradient-to-r from-emerald-500 to-blue-500 text-white py-4 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:from-emerald-600 hover:to-blue-600 active:from-emerald-700 active:to-blue-700 transition-colors text-lg"
+              >
+                <Check className="w-4 h-4" />
+                Complete Set & Finish Workout
+              </button>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={handleSkipSet}
+                className="flex-1 bg-gray-100 text-gray-700 py-4 px-4 rounded-lg font-medium hover:bg-gray-200 active:bg-gray-300 transition-colors text-lg"
+              >
+                Skip & Finish
+              </button>
+              <button
+                onClick={handleCompleteWorkout}
+                className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 text-white py-4 px-4 rounded-lg font-medium hover:from-orange-600 hover:to-red-600 active:from-orange-700 active:to-red-700 transition-colors text-lg"
+              >
+                Finish Workout
+              </button>
+            </div>
+          </div>
+        ) : (
+          // Regular set progression
+          <div className="flex gap-3">
+            <button
+              onClick={handleSkipSet}
+              className="flex-1 bg-gray-100 text-gray-700 py-4 px-4 rounded-lg font-medium hover:bg-gray-200 active:bg-gray-300 transition-colors text-lg"
+            >
+              {hasMoreSets ? 'Skip Set' : hasMoreExercises ? 'Skip to Next Exercise' : 'Skip Set'}
+            </button>
+            <button
+              onClick={handleCompleteSet}
+              disabled={bankedReps === 0}
+              className={`flex-1 py-4 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors text-lg ${
+                bankedReps === 0
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-emerald-500 to-blue-500 text-white hover:from-emerald-600 hover:to-blue-600 active:from-emerald-700 active:to-blue-700'
+              }`}
+            >
+              <Check className="w-4 h-4" />
+              {hasMoreSets ? 'Next Set' : hasMoreExercises ? 'Next Exercise' : 'Complete Set'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
