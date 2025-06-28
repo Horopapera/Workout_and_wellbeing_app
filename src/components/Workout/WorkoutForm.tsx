@@ -113,16 +113,7 @@ export default function WorkoutForm({ workout, onClose }: WorkoutFormProps) {
 
           {/* Exercises */}
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Exercises</h3>
-              <button
-                onClick={handleAddExercise}
-                className="bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-emerald-600 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                Add Exercise
-              </button>
-            </div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Exercises</h3>
 
             <div className="space-y-4">
               {exercises.map((exercise, index) => (
@@ -145,12 +136,21 @@ export default function WorkoutForm({ workout, onClose }: WorkoutFormProps) {
                   />
                 </div>
               ))}
+              
+              {/* Add Exercise Button - appears after all exercises */}
+              <button
+                onClick={handleAddExercise}
+                className="w-full bg-emerald-500 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-emerald-600 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Add Exercise
+              </button>
             </div>
 
             {exercises.length === 0 && (
               <div className="text-center py-8 text-gray-500">
                 <p>No exercises added yet</p>
-                <p className="text-sm">Click "Add Exercise" to get started</p>
+                <p className="text-sm">Click "Add Exercise" below to get started</p>
               </div>
             )}
           </div>
