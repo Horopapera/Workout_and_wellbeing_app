@@ -178,6 +178,7 @@ export default function FoodLibrary({ onClose }: FoodLibraryProps) {
   ];
 
   return (
+    <>
     <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50">
       <div className="bg-white rounded-t-2xl w-full max-w-md max-h-[85vh] flex flex-col mb-20">
         {/* Header */}
