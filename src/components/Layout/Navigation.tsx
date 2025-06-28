@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Dumbbell, UtensilsCrossed, BarChart3, Heart } from 'lucide-react';
+import { Home, Dumbbell, UtensilsCrossed, BarChart3, Heart, User } from 'lucide-react';
 
 interface NavigationProps {
   currentTab: string;
@@ -8,10 +8,10 @@ interface NavigationProps {
 
 const tabs = [
   { id: 'dashboard', label: 'Home', icon: Home },
+  { id: 'profile', label: 'Profile', icon: User },
   { id: 'workout', label: 'Workout', icon: Dumbbell },
   { id: 'diet', label: 'Diet', icon: UtensilsCrossed },
-  { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-  { id: 'wellness', label: 'Wellness', icon: Heart }
+  { id: 'analytics', label: 'Analytics', icon: BarChart3 }
 ];
 
 export default function Navigation({ currentTab, onTabChange }: NavigationProps) {

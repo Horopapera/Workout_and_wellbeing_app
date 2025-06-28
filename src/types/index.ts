@@ -24,6 +24,27 @@ export interface User {
     carbs: number;
     fat: number;
   };
+  avatar?: string;
+  preferences?: {
+    notifications: {
+      workouts: boolean;
+      meals: boolean;
+      water: boolean;
+      reminders: boolean;
+    };
+    units: 'metric' | 'imperial';
+    theme: 'light' | 'dark';
+  };
+}
+
+export interface Notification {
+  id: string;
+  type: 'workout' | 'meal' | 'water' | 'reminder' | 'achievement';
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+  actionUrl?: string;
 }
 
 export interface Food {

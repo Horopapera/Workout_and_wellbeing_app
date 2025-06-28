@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import { User, FoodEntry, PlannedFoodEntry, MealTemplate, Workout, Recipe, WellnessEntry, Food, QuickAddEntry } from '../types';
+import { User, FoodEntry, PlannedFoodEntry, MealTemplate, Workout, Recipe, WellnessEntry, Food, QuickAddEntry, Notification } from '../types';
 
 interface AppState {
   user: User | null;
@@ -12,6 +12,7 @@ interface AppState {
   currentDate: string;
   customFoods: Food[];
   quickAddEntries: QuickAddEntry[];
+  notifications: Notification[];
 }
 
 type AppAction =
@@ -40,7 +41,11 @@ type AppAction =
   | { type: 'UPDATE_WORKOUT'; payload: Workout }
   | { type: 'DELETE_WORKOUT'; payload: string }
   | { type: 'ADD_WELLNESS_ENTRY'; payload: WellnessEntry }
-  | { type: 'SET_CURRENT_DATE'; payload: string };
+  | { type: 'SET_CURRENT_DATE'; payload: string }
+  | { type: 'ADD_NOTIFICATION'; payload: Notification }
+  | { type: 'MARK_NOTIFICATION_READ'; payload: string }
+  | { type: 'CLEAR_ALL_NOTIFICATIONS' }
+  | { type: 'DELETE_NOTIFICATION'; payload: string };
 
 const initialState: AppState = {
   user: null,
@@ -52,7 +57,25 @@ const initialState: AppState = {
   wellnessEntries: [],
   currentDate: new Date().toISOString().split('T')[0],
   customFoods: [],
-  quickAddEntries: []
+  quickAddEntries: [],
+  notifications: [
+    {
+      id: '1',
+      type: 'reminder',
+      title: 'Welcome to your fitness journey!',
+      message: 'Complete your first workout to get started',
+      timestamp: new Date().toISOString(),
+      read: false
+    },
+    {
+      id: '2',
+      type: 'meal',
+      title: 'Meal reminder',
+      message: "Don't forget to log your lunch",
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      read: false
+    }
+  ]
 };
 
 function appReducer(state: AppState, action: AppAction): AppState {
@@ -218,6 +241,25 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, wellnessEntries: [...state.wellnessEntries, action.payload] };
     case 'SET_CURRENT_DATE':
       return { ...state, currentDate: action.payload };
+    case 'ADD_NOTIFICATION':
+      return { ...state, notifications: [action.payload, ...state.notifications] };
+    case 'MARK_NOTIFICATION_READ':
+      return {
+        ...state,
+        notifications: state.notifications.map(notification =>
+          notification.id === action.payload ? { ...notification, read: true } : notification
+        )
+      };
+    case 'CLEAR_ALL_NOTIFICATIONS':
+      return {
+        ...state,
+        notifications: state.notifications.map(notification => ({ ...notification, read: true }))
+      };
+    case 'DELETE_NOTIFICATION':
+      return {
+        ...state,
+        notifications: state.notifications.filter(notification => notification.id !== action.payload)
+      };
     default:
       return state;
   }

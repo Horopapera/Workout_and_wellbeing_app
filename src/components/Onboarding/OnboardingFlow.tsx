@@ -9,12 +9,22 @@ import Summary from './Summary';
 export default function OnboardingFlow() {
   const { dispatch } = useApp();
   const [step, setStep] = useState(1);
-  const [userData, setUserData] = useState<Partial<User>>({
+  const [userData, setUserData] = useState<Partial<User> & { preferences?: any }>({
     goal: 'maintain',
     activityLevel: 'moderate',
     dietaryPreferences: [],
     workoutStyle: [],
-    macroTargets: { protein: 0, carbs: 0, fat: 0 }
+    macroTargets: { protein: 0, carbs: 0, fat: 0 },
+    preferences: {
+      notifications: {
+        workouts: true,
+        meals: true,
+        water: true,
+        reminders: true
+      },
+      units: 'metric',
+      theme: 'light'
+    }
   });
 
   const handleNext = () => setStep(step + 1);
@@ -77,7 +87,8 @@ export default function OnboardingFlow() {
       workoutStyle: userData.workoutStyle || [],
       dailyCalories: calories,
       macroTargets: macros,
-      onboardingCompleted: true
+      onboardingCompleted: true,
+      preferences: userData.preferences
     };
 
     dispatch({ type: 'SET_USER', payload: user });

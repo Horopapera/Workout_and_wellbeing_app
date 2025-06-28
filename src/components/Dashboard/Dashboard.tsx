@@ -4,6 +4,7 @@ import DashboardHeader from './DashboardHeader';
 import QuickStats from './QuickStats';
 import TodayOverview from './TodayOverview';
 import QuickActions from './QuickActions';
+import NotificationCenter from '../Notifications/NotificationCenter';
 import WorkoutQuickStart from './WorkoutQuickStart';
 
 interface DashboardProps {
@@ -13,6 +14,7 @@ interface DashboardProps {
 export default function Dashboard({ onStartWorkout }: DashboardProps) {
   const { state } = useApp();
   const [showWorkoutQuickStart, setShowWorkoutQuickStart] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const { user, foodEntries, workouts, wellnessEntries, currentDate } = state;
 
   if (!user) return null;
@@ -38,7 +40,14 @@ export default function Dashboard({ onStartWorkout }: DashboardProps) {
 
   return (
     <div className="max-w-md mx-auto bg-gray-50 min-h-screen pb-20">
-      <DashboardHeader user={user} />
+      <DashboardHeader 
+        user={user} 
+        onNotificationClick={() => setShowNotifications(true)}
+        onProfileClick={() => {
+          // This will be handled by the main App component
+          console.log('Profile clicked');
+        }}
+      />
       
       <div className="px-4 space-y-6">
         <QuickStats 
@@ -57,6 +66,11 @@ export default function Dashboard({ onStartWorkout }: DashboardProps) {
         
         <QuickActions onStartWorkout={() => setShowWorkoutQuickStart(true)} />
       </div>
+      
+      {/* Notification Center */}
+      {showNotifications && (
+        <NotificationCenter onClose={() => setShowNotifications(false)} />
+      )}
       
       {/* Workout Quick Start Modal */}
       {showWorkoutQuickStart && (

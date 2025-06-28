@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import OnboardingFlow from './components/Onboarding/OnboardingFlow';
 import Dashboard from './components/Dashboard/Dashboard';
+import ProfilePage from './components/Profile/ProfilePage';
 import WorkoutPlans from './components/Workout/WorkoutPlans';
 import WorkoutSession from './components/Workout/WorkoutSession';
 import DietTracker from './components/Diet/DietTracker';
@@ -16,7 +17,7 @@ function AppContent() {
   const [activeWorkout, setActiveWorkout] = useState<Workout | null>(null);
 
   // Show onboarding if user hasn't completed it
-  if (!state.user || !state.user.onboardingCompleted) {
+  if (!state.user?.onboardingCompleted) {
     return <OnboardingFlow />;
   }
 
@@ -40,6 +41,8 @@ function AppContent() {
     switch (currentTab) {
       case 'dashboard':
         return <Dashboard onStartWorkout={handleStartWorkoutFromDashboard} />;
+      case 'profile':
+        return <ProfilePage />;
       case 'workout':
         return (
           <WorkoutPlans />
