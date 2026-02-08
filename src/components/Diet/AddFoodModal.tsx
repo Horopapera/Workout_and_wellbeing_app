@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { X, Search, Save, Calculator, Library, Plus, Camera, Zap, Clock, Star } from 'lucide-react';
 import { FoodEntry, PlannedFoodEntry, Food } from '../../types';

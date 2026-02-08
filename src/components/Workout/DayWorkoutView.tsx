@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { X, Plus, Play, CheckCircle2, Clock, Trash2, Calendar } from 'lucide-react';
+import { X, Plus, CheckCircle2, Clock, Trash2, Calendar } from 'lucide-react';
 import { Workout } from '../../types';
 import WorkoutScheduler from './WorkoutScheduler';
 

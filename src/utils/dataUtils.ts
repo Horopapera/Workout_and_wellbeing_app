@@ -1,34 +1,23 @@
 // Data utilities for transforming between app and database models
 // These will be used in Phase 5 when migrating to Supabase
 
-import { 
-  User, 
-  FoodEntry, 
-  PlannedFoodEntry, 
-  MealTemplate, 
-  Workout, 
-  Recipe, 
-  WellnessEntry, 
-  Food, 
-  QuickAddEntry, 
-  Notification 
+import {
+  User,
+  FoodEntry,
+  PlannedFoodEntry,
+  Workout,
+  Recipe,
+  Food,
+  QuickAddEntry,
+  Notification
 } from '../types';
-import { 
-  DatabaseUser, 
-  DatabaseFood, 
-  DatabaseFoodEntry, 
-  DatabasePlannedFoodEntry, 
-  DatabaseMealTemplate, 
-  DatabaseMealTemplateItem, 
-  DatabaseWorkout, 
-  DatabaseWorkoutExercise, 
-  DatabaseWorkoutSet, 
-  DatabaseExercise, 
-  DatabaseRecipe, 
-  DatabaseRecipeIngredient, 
-  DatabaseWellnessEntry, 
-  DatabaseNotification, 
-  DatabaseQuickAddEntry 
+import {
+  DatabaseUser,
+  DatabaseFood,
+  DatabaseFoodEntry,
+  DatabasePlannedFoodEntry,
+  DatabaseNotification,
+  DatabaseQuickAddEntry
 } from '../types/database';
 
 /**

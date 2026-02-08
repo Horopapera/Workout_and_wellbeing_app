@@ -1,5 +1,3 @@
-import { dataService } from '../services/dataService';
-
 // Authentication storage utilities for simulated multi-user system
 export const AUTH_STORAGE_KEYS = {
   USER_ACCOUNTS: 'fitness_app_user_accounts',
@@ -130,7 +128,6 @@ export const deleteUserAccount = (userId: string): void => {
 };
 
 // Migration utilities for Phase 5
-export const migrateToSupabaseAuth = async (userId: string): Promise<boolean> => {
-  // This will be implemented in Phase 5
+export const migrateToSupabaseAuth = async (_userId: string): Promise<boolean> => {
   return false;
 };

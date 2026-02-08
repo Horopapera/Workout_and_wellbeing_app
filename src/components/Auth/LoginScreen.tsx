@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Mail, Lock, Eye, EyeOff, LogIn, UserPlus, Users } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, LogIn } from 'lucide-react';
 import { supabase } from '../../services/supabaseClient';
 
 interface LoginScreenProps {

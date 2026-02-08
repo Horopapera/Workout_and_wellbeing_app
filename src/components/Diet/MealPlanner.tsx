@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Calendar, ChevronLeft, ChevronRight, Plus, Copy, Save, Trash2, BookOpen, Clock } from 'lucide-react';
-import { PlannedFoodEntry, MealTemplate } from '../../types';
+import { ChevronLeft, ChevronRight, Plus, Copy, Save, Trash2, BookOpen, Clock } from 'lucide-react';
+import { PlannedFoodEntry } from '../../types';
 import AddFoodModal from './AddFoodModal';
 import MealTemplateManager from './MealTemplateManager';
 
 export default function MealPlanner() {
   const { state, dispatch } = useApp();
-  const { plannedFoodEntries, mealTemplates, currentDate } = state;
+  const { plannedFoodEntries, currentDate } = state;
   const [selectedDate, setSelectedDate] = useState(currentDate);
   const [showAddFood, setShowAddFood] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<'breakfast' | 'lunch' | 'dinner' | 'snack'>('breakfast');

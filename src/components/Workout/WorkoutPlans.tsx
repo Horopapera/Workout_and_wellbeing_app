@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Plus, Calendar, TrendingUp, Clock } from 'lucide-react';
+import { Plus, Calendar, TrendingUp } from 'lucide-react';
 import WorkoutList from './WorkoutList';
 import WorkoutForm from './WorkoutForm';
 import WorkoutSession from './WorkoutSession';

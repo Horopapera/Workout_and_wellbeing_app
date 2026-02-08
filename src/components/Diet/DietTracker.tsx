@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Calendar, Plus, Settings, CalendarDays } from 'lucide-react';
+import { Calendar, CalendarDays } from 'lucide-react';
 import DietHeader from './DietHeader';
 import DailyNutritionSummary from './DailyNutritionSummary';
 import MealSection from './MealSection';

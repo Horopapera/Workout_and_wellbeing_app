@@ -164,8 +164,7 @@ const saveDataToService = async (state: AppState, action: AppAction) => {
         await dataService.saveNotification(userId, action.payload);
         break;
       case 'MARK_NOTIFICATION_READ':
-      case 'DELETE_NOTIFICATION':
-        // Find and update/delete the notification
+      case 'DELETE_NOTIFICATION': {
         const notification = state.notifications.find(n => n.id === action.payload);
         if (notification) {
           if (action.type === 'MARK_NOTIFICATION_READ') {
@@ -175,12 +174,13 @@ const saveDataToService = async (state: AppState, action: AppAction) => {
           }
         }
         break;
-      case 'CLEAR_ALL_NOTIFICATIONS':
-        // Update all notifications to read
-        for (const notification of state.notifications.filter(n => !n.read)) {
-          await dataService.updateNotification(userId, { ...notification, read: true });
+      }
+      case 'CLEAR_ALL_NOTIFICATIONS': {
+        for (const notif of state.notifications.filter(n => !n.read)) {
+          await dataService.updateNotification(userId, { ...notif, read: true });
         }
         break;
+      }
     }
   } catch (error) {
     console.error('Failed to save data to service:',  error);
@@ -272,7 +272,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
       };
       break;
       
-    case 'COPY_PLANNED_MEALS':
+    case 'COPY_PLANNED_MEALS': {
       const { fromDate, toDate } = action.payload;
       const mealsFromDate = state.plannedFoodEntries.filter(entry => entry.date === fromDate);
       const copiedMeals = mealsFromDate.map(entry => ({
@@ -286,6 +286,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
         plannedFoodEntries: [...state.plannedFoodEntries, ...copiedMeals]
       };
       break;
+    }
       
     case 'ADD_MEAL_TEMPLATE':
       newState = { ...state, mealTemplates: [...state.mealTemplates, action.payload] };
@@ -307,20 +308,18 @@ function appReducer(state: AppState, action: AppAction): AppState {
       };
       break;
       
-    case 'APPLY_MEAL_TEMPLATE':
+    case 'APPLY_MEAL_TEMPLATE': {
       const { templateId, date } = action.payload;
       const template = state.mealTemplates.find(t => t.id === templateId);
       if (!template) {
         newState = state;
         break;
       }
-      
-      // Remove existing planned meals for this date
+
       const filteredPlanned = state.plannedFoodEntries.filter(entry => entry.date !== date);
-      
-      // Create new planned entries from template
+
       const newPlannedEntries: PlannedFoodEntry[] = [];
-      Object.entries(template.meals).forEach(([mealType, entries]) => {
+      Object.entries(template.meals).forEach(([, entries]) => {
         entries.forEach(entry => {
           newPlannedEntries.push({
             ...entry,
@@ -330,18 +329,18 @@ function appReducer(state: AppState, action: AppAction): AppState {
           });
         });
       });
-      
-      // Update template last used
-      const updatedTemplates = state.mealTemplates.map(t => 
+
+      const updatedTemplates = state.mealTemplates.map(t =>
         t.id === templateId ? { ...t, lastUsed: new Date().toISOString() } : t
       );
-      
+
       newState = {
         ...state,
         plannedFoodEntries: [...filteredPlanned, ...newPlannedEntries],
         mealTemplates: updatedTemplates
       };
       break;
+    }
       
     case 'ADD_CUSTOM_FOOD':
       newState = { ...state, customFoods: [...state.customFoods, action.payload] };
@@ -399,8 +398,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
       newState = { ...state, quickAddEntries: [...state.quickAddEntries, action.payload] };
       break;
       
-    case 'ADD_WORKOUT':
-      // Check if workout with same ID already exists (prevent duplicates)
+    case 'ADD_WORKOUT': {
       const existingWorkout = state.workouts.find(w => w.id === action.payload.id);
       if (existingWorkout) {
         newState = state;
@@ -408,6 +406,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
       }
       newState = { ...state, workouts: [...state.workouts, action.payload] };
       break;
+    }
       
     case 'UPDATE_WORKOUT':
       newState = {

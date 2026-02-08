@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Dumbbell, UtensilsCrossed, BarChart3, Heart, User } from 'lucide-react';
+import { Home, Dumbbell, UtensilsCrossed, BarChart3, User } from 'lucide-react';
 
 interface NavigationProps {
   currentTab: string;

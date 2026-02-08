@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { X, Plus, Trash2, Save } from 'lucide-react';
-import { Workout, WorkoutExercise, Exercise } from '../../types';
+import { Workout, WorkoutExercise } from '../../types';
 import ExerciseForm from './ExerciseForm';
-import { mockExercises } from '../../data/mockData';
 
 interface WorkoutFormProps {
   workout?: Workout | null;

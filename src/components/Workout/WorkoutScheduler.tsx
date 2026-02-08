@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { X, Calendar, Repeat, Save } from 'lucide-react';
+import { X, Repeat, Save } from 'lucide-react';
 import { Workout } from '../../types';
 
 interface WorkoutSchedulerProps {
@@ -49,7 +49,7 @@ export default function WorkoutScheduler({ workout, onClose }: WorkoutSchedulerP
     // Generate dates based on repeat type
     const generateDates = () => {
       const dates: Date[] = [];
-      let currentWeek = new Date(start);
+      const currentWeek = new Date(start);
       
       // Find the start of the week containing our start date
       const dayOfWeek = currentWeek.getDay();

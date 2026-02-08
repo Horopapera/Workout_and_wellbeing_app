@@ -1,5 +1,3 @@
-import { dataService } from '../services/dataService';
-
 // Local storage utilities for user profile management
 export const STORAGE_KEYS = {
   USER_PROFILE: 'fitness_app_user_profile',

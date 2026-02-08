@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { X, BookOpen, Play, Edit3, Trash2, Calendar, Save } from 'lucide-react';
+import { X, BookOpen, Play, Edit3, Trash2 } from 'lucide-react';
 import { MealTemplate } from '../../types';
 
 interface MealTemplateManagerProps {

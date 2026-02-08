@@ -1,6 +1,6 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { Play, Edit3, Trash2, Calendar, CheckCircle2, Clock, CalendarPlus } from 'lucide-react';
+import { Play, Edit3, Trash2, CheckCircle2, Clock, CalendarPlus } from 'lucide-react';
 import { Workout } from '../../types';
 import EmptyState from '../Shared/EmptyState';
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, Check, X, AlertCircle } from 'lucide-react';
+import { Upload, Check, AlertCircle } from 'lucide-react';
 import { migrationUtils } from '../utils/dataUtils';
 import { loadAppData } from '../utils/localStorage';
 

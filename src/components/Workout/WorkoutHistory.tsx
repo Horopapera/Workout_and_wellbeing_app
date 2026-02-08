@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Calendar, TrendingUp, Award, Clock, CheckCircle2, Flame, Timer, Play, Square } from 'lucide-react';
+import { TrendingUp, Award, Clock, CheckCircle2, Flame, Timer, Play, Square } from 'lucide-react';
 import EmptyState from '../Shared/EmptyState';
 
 export default function WorkoutHistory() {
@@ -33,16 +33,7 @@ export default function WorkoutHistory() {
     }
   });
 
-  // Calculate stats
   const totalWorkouts = completedWorkouts.length;
-  const thisWeekWorkouts = completedWorkouts.filter(w => {
-    const workoutDate = new Date(w.date!);
-    const diffTime = now.getTime() - workoutDate.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays <= 7;
-  }).length;
-
-  const averageWorkoutsPerWeek = totalWorkouts > 0 ? Math.round((totalWorkouts / 4) * 10) / 10 : 0;
 
   // Calculate current streak
   const calculateStreak = () => {

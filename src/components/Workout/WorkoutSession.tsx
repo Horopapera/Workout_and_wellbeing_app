@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useApp } from '../../context/AppContext';
-import { X, ChevronLeft, ChevronRight, Check, Play, Pause, RotateCcw } from 'lucide-react';
-import { Workout, WorkoutExercise, WorkoutSet } from '../../types';
+import { X, Check, Play, Pause, RotateCcw } from 'lucide-react';
+import { Workout, WorkoutExercise } from '../../types';
 
 interface WorkoutSessionProps {
   workout: Workout;

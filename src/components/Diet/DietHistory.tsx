@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Calendar, TrendingUp, Award, Target, ChevronLeft, ChevronRight, BarChart3, PieChart, Activity } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart as RechartsPieChart, Cell } from 'recharts';
+import { Calendar, TrendingUp, BarChart3, Activity } from 'lucide-react';
 import DietHistoryCalendar from './DietHistoryCalendar';
 import NutritionTrendChart from './NutritionTrendChart';
 import ComplianceStatsPanel from './ComplianceStatsPanel';
@@ -9,7 +8,7 @@ import DailyDetailView from './DailyDetailView';
 
 export default function DietHistory() {
   const { state } = useApp();
-  const { user, foodEntries, currentDate } = state;
+  const { user, foodEntries } = state;
   const [activeView, setActiveView] = useState<'calendar' | 'trends' | 'insights'>('calendar');
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | '3months'>('week');
   const [selectedDetailDate, setSelectedDetailDate] = useState<string | null>(null);

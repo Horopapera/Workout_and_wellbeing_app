@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Bell, Settings, UserCircle } from 'lucide-react';
+import { Bell, Settings, UserCircle } from 'lucide-react';
 import { User as UserType } from '../../types';
 
 interface DashboardHeaderProps {

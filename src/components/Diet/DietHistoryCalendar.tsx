@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { ChevronLeft, ChevronRight, Calendar, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface DietHistoryCalendarProps {
   onDateSelect: (date: string) => void;

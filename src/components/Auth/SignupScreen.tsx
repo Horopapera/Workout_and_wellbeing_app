@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { User, Mail, Lock, Eye, EyeOff, UserPlus, ArrowLeft } from 'lucide-react';
 import { supabase } from '../../services/supabaseClient';
-import { User as UserType } from '../../types';
 
 interface SignupScreenProps {
   onSignup: (userId: string) => void;

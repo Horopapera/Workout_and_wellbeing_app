@@ -6,7 +6,6 @@ import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { dataService } from '../../services/dataService';
 import { User } from '../../types';
 import LoadingScreen from '../Shared/LoadingScreen';
-import { transformers } from '../../utils/dataUtils';
 
 interface AuthFlowProps {
   onAuthenticated: () => void;

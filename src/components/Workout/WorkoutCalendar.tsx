@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { ChevronLeft, ChevronRight, Calendar, CheckCircle2, Clock, Plus, CalendarPlus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle2, Clock, CalendarPlus } from 'lucide-react';
 import DayWorkoutView from './DayWorkoutView';
 
 export default function WorkoutCalendar() {
@@ -105,7 +105,6 @@ export default function WorkoutCalendar() {
             }
 
             const dayWorkouts = getWorkoutsForDay(day);
-            const completedWorkouts = dayWorkouts.filter(w => w.completed);
             const hasWorkouts = dayWorkouts.length > 0;
 
             return (

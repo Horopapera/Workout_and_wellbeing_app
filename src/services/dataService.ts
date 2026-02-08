@@ -13,7 +13,6 @@ import {
   QuickAddEntry, 
   Notification 
 } from '../types';
-import { DatabaseTables } from '../types/database';
 import { SupabaseAdapter } from './supabaseService';
 import { supabase } from './supabaseClient';
 

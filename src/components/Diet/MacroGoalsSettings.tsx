@@ -10,14 +10,11 @@ export default function MacroGoalsSettings({ onClose }: MacroGoalsSettingsProps)
   const { state, dispatch } = useApp();
   const { user } = state;
 
-  if (!user) return null;
-
-  // Use custom goals if set, otherwise use calculated defaults
-  const currentGoals = user.customMacroGoals || {
-    calories: user.dailyCalories,
-    protein: user.macroTargets.protein,
-    carbs: user.macroTargets.carbs,
-    fat: user.macroTargets.fat
+  const currentGoals = user?.customMacroGoals || {
+    calories: user?.dailyCalories || 2000,
+    protein: user?.macroTargets?.protein || 125,
+    carbs: user?.macroTargets?.carbs || 250,
+    fat: user?.macroTargets?.fat || 67
   };
 
   const [goals, setGoals] = useState({
@@ -26,6 +23,8 @@ export default function MacroGoalsSettings({ onClose }: MacroGoalsSettingsProps)
     carbs: currentGoals.carbs.toString(),
     fat: currentGoals.fat.toString()
   });
+
+  if (!user) return null;
 
   const handleSave = () => {
     const newGoals = {
