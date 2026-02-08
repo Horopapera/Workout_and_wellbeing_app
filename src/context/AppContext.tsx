@@ -48,7 +48,20 @@ type AppAction =
   | { type: 'CLEAR_ALL_NOTIFICATIONS' }
   | { type: 'DELETE_NOTIFICATION'; payload: string }
   | { type: 'LOGOUT_USER' }
-  | { type: 'LOAD_USER_DATA'; payload: { user: User; appData: any } };
+  | { type: 'LOAD_USER_DATA'; payload: {
+      user: User;
+      appData: {
+        foodEntries: FoodEntry[];
+        plannedFoodEntries: PlannedFoodEntry[];
+        mealTemplates: MealTemplate[];
+        workouts: Workout[];
+        recipes: Recipe[];
+        wellnessEntries: WellnessEntry[];
+        customFoods: Food[];
+        notifications: Notification[];
+        quickAddEntries: QuickAddEntry[];
+      }
+    } };
 
 // Load user profile from data service on app start
 const loadInitialState = (): AppState => {

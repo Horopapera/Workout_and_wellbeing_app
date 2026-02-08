@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useApp } from '../../context/AppContext';
 import { supabase } from '../../services/supabaseClient';
 import { Auth } from '@supabase/auth-ui-react';
@@ -17,48 +17,7 @@ export default function AuthFlow({ onAuthenticated }: AuthFlowProps) {
   const [loadingMessage, setLoadingMessage] = useState('Checking your session...');
   const [error, setError] = useState<string | null>(null);
 
-  // Check for existing session on mount
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        setIsLoading(true);
-        setLoadingMessage('Checking your session...');
-
-        // Get the current session
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session) {
-          setLoadingMessage('Loading your profile...');
-          await handleUserAuthenticated(session.user.id);
-        } else {
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error('Error checking session:', error);
-        setError('Failed to check your session. Please try again.');
-        setIsLoading(false);
-      }
-    };
-
-    checkSession();
-
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        setIsLoading(true);
-        setLoadingMessage('Loading your profile...');
-        await handleUserAuthenticated(session.user.id);
-      } else if (event === 'SIGNED_OUT') {
-        dispatch({ type: 'LOGOUT_USER' });
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const handleUserAuthenticated = async (userId: string) => {
+  const handleUserAuthenticated = useCallback(async (userId: string) => {
     try {
       // Get user profile from Supabase
       let userProfile = await dataService.getUser(userId);
@@ -182,7 +141,48 @@ export default function AuthFlow({ onAuthenticated }: AuthFlowProps) {
       setError('Failed to load your profile. Please try again.');
       setIsLoading(false);
     }
-  };
+  }, [dispatch, onAuthenticated]);
+
+  // Check for existing session on mount
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        setIsLoading(true);
+        setLoadingMessage('Checking your session...');
+
+        // Get the current session
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (session) {
+          setLoadingMessage('Loading your profile...');
+          await handleUserAuthenticated(session.user.id);
+        } else {
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+        setError('Failed to check your session. Please try again.');
+        setIsLoading(false);
+      }
+    };
+
+    checkSession();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        setIsLoading(true);
+        setLoadingMessage('Loading your profile...');
+        await handleUserAuthenticated(session.user.id);
+      } else if (event === 'SIGNED_OUT') {
+        dispatch({ type: 'LOGOUT_USER' });
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [handleUserAuthenticated, dispatch]);
 
   if (isLoading) {
     return <LoadingScreen message={loadingMessage} />;

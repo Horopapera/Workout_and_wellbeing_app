@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import AuthFlow from './components/Auth/AuthFlow';
 import { supabase } from './services/supabaseClient';
 import OnboardingFlow from './components/Onboarding/OnboardingFlow';
 import Dashboard from './components/Dashboard/Dashboard';
-import { useEffect } from 'react';
 import ProfilePage from './components/Profile/ProfilePage';
 import WorkoutPlans from './components/Workout/WorkoutPlans';
 import WorkoutSession from './components/Workout/WorkoutSession';
 import DietTracker from './components/Diet/DietTracker';
 import Navigation from './components/Layout/Navigation';
+import ErrorBoundary from './components/Shared/ErrorBoundary';
 import { Workout } from './types';
 
 function AppContent() {
@@ -140,7 +140,7 @@ function AppContent() {
           </div>
         );
       default:
-        return <Dashboard />;
+        return <Dashboard onStartWorkout={handleStartWorkoutFromDashboard} />;
     }
   };
 
@@ -164,9 +164,11 @@ function AppContent() {
 
 function App() {
   return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>
+    <ErrorBoundary>
+      <AppProvider>
+        <AppContent />
+      </AppProvider>
+    </ErrorBoundary>
   );
 }
 

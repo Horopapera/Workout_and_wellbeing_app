@@ -14,7 +14,6 @@ import {
   Notification 
 } from '../types';
 import { SupabaseAdapter } from './supabaseService';
-import { supabase } from './supabaseClient';
 
 // Storage interface - can be implemented by localStorage, Supabase, or any other backend
 interface DataStorage {
@@ -90,21 +89,10 @@ class DataService {
 
   constructor(config: DataServiceConfig) {
     this.config = config;
-    
+
     // Initialize storage based on configuration
+    // Note: Auth checks are handled per-request by the storage adapter
     if (config.storage === 'supabase') {
-      // Check if we have a valid Supabase session
-      const session = supabase.auth.getSession();
-      if (!session) {
-        throw new Error('No Supabase session found. Please authenticate first.');
-      }
-      
-      // Get the user ID from the session
-      const userId = supabase.auth.getUser().then(({ data }) => data.user?.id);
-      if (!userId) {
-        throw new Error('No user ID found in Supabase session.');
-      }
-      
       this.storage = new SupabaseAdapter();
     } else {
       this.storage = new LocalStorageAdapter();
@@ -475,7 +463,19 @@ class DataService {
   }
 
   // Migration utilities for Phase 5
-  async exportUserData(userId: string): Promise<any> {
+  async exportUserData(userId: string): Promise<{
+    user: User | null;
+    foodEntries: FoodEntry[];
+    plannedFoodEntries: PlannedFoodEntry[];
+    mealTemplates: MealTemplate[];
+    workouts: Workout[];
+    recipes: Recipe[];
+    wellnessEntries: WellnessEntry[];
+    customFoods: Food[];
+    notifications: Notification[];
+    quickAddEntries: QuickAddEntry[];
+    exportedAt: string;
+  }> {
     try {
       const [
         user,
@@ -523,7 +523,7 @@ class DataService {
 
 // Custom error class for data service operations
 class DataServiceError extends Error {
-  constructor(message: string, public originalError?: any) {
+  constructor(message: string, public originalError?: unknown) {
     super(message);
     this.name = 'DataServiceError';
   }

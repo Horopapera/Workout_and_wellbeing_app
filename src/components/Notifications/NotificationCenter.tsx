@@ -9,11 +9,16 @@ interface NotificationCenterProps {
 export default function NotificationCenter({ onClose }: NotificationCenterProps) {
   const { state, dispatch } = useApp();
   const { notifications } = state;
+  const hasCheckedWelcome = React.useRef(false);
 
-  // Add a welcome notification for returning users
+  // Add a welcome notification for new users (runs once on mount)
   React.useEffect(() => {
+    // Only check once to avoid unnecessary dispatches
+    if (hasCheckedWelcome.current) return;
+    hasCheckedWelcome.current = true;
+
     const hasWelcomeNotification = notifications.some(n => n.type === 'reminder' && n.title.includes('Welcome'));
-    
+
     if (!hasWelcomeNotification && notifications.length === 0) {
       dispatch({
         type: 'ADD_NOTIFICATION',
@@ -27,7 +32,7 @@ export default function NotificationCenter({ onClose }: NotificationCenterProps)
         }
       });
     }
-  }, []);
+  }, [notifications, dispatch]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
